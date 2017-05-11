@@ -2,43 +2,58 @@
   "nodes": [
     {
       "id": "precise",
-      "disables": ["imprecise"]
+      "disables": ["imprecise"],
+      "enables": ["test"]
     },
     {
       "id": "imprecise",
-      "disables": ["precise"]
+      "disables": ["precise"],
+      "enables": []
     },
     {
       "id": "random",
-      "disables": ["counting"]
+      "disables": ["counting", "known"],
+      "enables": []
     },
     {
       "id": "counting",
-      "disables": []
+      "disables": ["random", "known"],
+      "enables": []
     },
     {
       "id": "adjustment",
-      "disables": []
+      "disables": [],
+      "enables": []
     },
     {
       "id": "choice",
-      "disables": ["imprecise"]
+      "disables": ["unbounded", "counting"],
+      "enables": ["bounded", "precise"]
     },
     {
       "id": "known",
-      "disables": ["unknown"]
+      "disables": ["unknown"],
+      "enables": []
     },
     {
       "id": "unknown",
-      "disables": ["known"]
+      "disables": ["known"],
+      "enables": []
     },
     {
       "id": "bounded",
-      "disables": ["unbounded"]
+      "disables": ["unbounded"],
+      "enables": []
     },
     {
       "id": "unbounded",
-      "disables": ["bounded"]
+      "disables": ["bounded"],
+      "enables": []
+    },
+    {
+      "id": "test",
+      "disables": ["test"],
+      "enables": []
     }
   ]
 }
