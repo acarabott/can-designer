@@ -50,18 +50,18 @@ function render (graph) {
   node.attr('active', false)
       .attr('disabled', false);
 
-  function updateCircleFill() {
+  function updateCircles() {
+    const getAlpha = d => d.active ? 1.0 : d.disabled ? 0.1 : 0.5;
     node.selectAll('circle')
-      .attr('fill', d => {
-        const alpha = d.active ? 1.0 : d.disabled ? 0.1 : 0.5;
-        return `rgba(43, 156, 212, ${alpha})`;
-      });
+      .attr('fill', d => `rgba(43, 156, 212, ${getAlpha(d)})`);
+    node.selectAll('text')
+      .attr('fill', d => `rgba(0, 0, 0, ${getAlpha(d)})`);
   }
 
   node.append('circle')
     .attr('r', 10);
 
-  updateCircleFill();
+  updateCircles();
 
   node.append('text')
     .attr('dx', 12)
@@ -75,7 +75,7 @@ function render (graph) {
       if (d.active) { toDisable.disabledBy.push(d.id); }
       else { toDisable.disabledBy.splice(toDisable.disabledBy.findIndex(v => v === d.id), 1); }
     });
-    updateCircleFill();
+    updateCircles();
   });
 
 

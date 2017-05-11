@@ -1,12 +1,44 @@
 {
   "nodes": [
     {
+      "id": "precise",
+      "disables": ["imprecise"]
+    },
+    {
+      "id": "imprecise",
+      "disables": ["precise"]
+    },
+    {
+      "id": "random",
+      "disables": ["counting"]
+    },
+    {
+      "id": "counting",
+      "disables": []
+    },
+    {
+      "id": "adjustment",
+      "disables": []
+    },
+    {
+      "id": "choice",
+      "disables": ["imprecise"]
+    },
+    {
       "id": "known",
       "disables": ["unknown"]
     },
     {
       "id": "unknown",
       "disables": ["known"]
+    },
+    {
+      "id": "bounded",
+      "disables": ["unbounded"]
+    },
+    {
+      "id": "unbounded",
+      "disables": ["bounded"]
     }
   ]
 }
