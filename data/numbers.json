@@ -3,7 +3,7 @@
     {
       "id": "precise",
       "disables": ["imprecise"],
-      "enables": ["test"]
+      "enables": []
     },
     {
       "id": "imprecise",
@@ -48,11 +48,6 @@
     {
       "id": "unbounded",
       "disables": ["bounded"],
-      "enables": []
-    },
-    {
-      "id": "test",
-      "disables": ["test"],
       "enables": []
     }
   ]
