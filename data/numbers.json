@@ -3,27 +3,37 @@
     {
       "id": "precise",
       "disables": ["imprecise"],
-      "enables": []
+      "enables": [],
+      "enabledByCombos": [],
+      "disabledByCombos": []
     },
     {
       "id": "imprecise",
       "disables": ["precise"],
-      "enables": []
+      "enables": [],
+      "enabledByCombos": [],
+      "disabledByCombos": []
     },
     {
       "id": "random",
       "disables": ["counting", "known"],
-      "enables": []
+      "enables": [],
+      "enabledByCombos": [],
+      "disabledByCombos": []
     },
     {
       "id": "counting",
       "disables": ["random", "known"],
-      "enables": []
+      "enables": [],
+      "enabledByCombos": [],
+      "disabledByCombos": []
     },
     {
       "id": "adjustment",
       "disables": [],
-      "enables": []
+      "enables": [],
+      "enabledByCombos": [],
+      "disabledByCombos": []
     },
     {
       "id": "choice",
@@ -33,22 +43,30 @@
     {
       "id": "known",
       "disables": ["unknown"],
-      "enables": []
+      "enables": [],
+      "enabledByCombos": [],
+      "disabledByCombos": []
     },
     {
       "id": "unknown",
       "disables": ["known"],
-      "enables": []
+      "enables": [],
+      "enabledByCombos": [],
+      "disabledByCombos": []
     },
     {
       "id": "bounded",
       "disables": ["unbounded"],
-      "enables": []
+      "enables": [],
+      "enabledByCombos": [["known", "random"]],
+      "disabledByCombos": []
     },
     {
       "id": "unbounded",
       "disables": ["bounded"],
-      "enables": []
+      "enables": [],
+      "enabledByCombos": [],
+      "disabledByCombos": []
     }
   ]
 }

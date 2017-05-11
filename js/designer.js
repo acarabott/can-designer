@@ -83,8 +83,18 @@ function render (graph) {
     };
 
     Object.defineProperties(n, {
-      disabled: { get: () => n.disabledBy.length > 0 },
-      enabled: { get: () => n._enabled || n.enabledBy.length > 0 }
+      disabled: {
+        get: () => {
+          const haveDisabled = n.disabledBy.length > 0;
+          return haveDisabled;
+        },
+      },
+      enabled: {
+        get: () => {
+          const haveEnabled = n._enabled || n.enabledBy.length > 0;
+          return haveEnabled;
+        }
+      }
     });
 
   });
@@ -106,10 +116,17 @@ function render (graph) {
       .attr('fill', d => `rgba(43, 156, 212, ${getAlpha(d)})`);
     node.selectAll('text')
       .attr('fill', d => `rgba(0, 0, 0, ${getAlpha(d)})`);
+    node.selectAll('.ring')
+      .attr('fill', 'none')
+      .attr('stroke', d => `rgba(43, 156, 212, ${d._enabled ? 1.0 : 0.0})`);
   }
 
   node.append('circle')
     .attr('r', 40);
+
+  node.append('circle')
+    .attr('r', 50)
+    .classed('ring', true);
 
   updateCircles();
 
