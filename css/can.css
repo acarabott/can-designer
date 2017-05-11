@@ -1,0 +1,40 @@
+* {
+  -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+     -khtml-user-select: none; /* Konqueror HTML */
+       -moz-user-select: none; /* Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome and Opera */
+
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: Lato, 'Helvetica Neue', Helvetica;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 200;
+}
+
+:root {
+  --my-blue: rgb(43, 156, 212);
+  --my-red: rgb(212, 100, 100);
+  --my-orange: rgb(249, 182, 118);
+  --my-green: rgb(43, 212, 156);
+}
+
+h1 {
+  text-align: center;
+}
+
+#container {
+  width: 100vw;
+  height: 100vh;
+  margin: 0vh auto;
+}
+
