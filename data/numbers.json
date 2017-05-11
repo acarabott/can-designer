@@ -16,7 +16,7 @@
     },
     {
       "id": "random",
-      "disables": ["counting", "known"],
+      "disables": ["counting"],
       "enables": [],
       "enabledByCombos": [],
       "disabledByCombos": []
@@ -38,7 +38,9 @@
     {
       "id": "choice",
       "disables": ["unbounded", "counting"],
-      "enables": ["bounded", "precise"]
+      "enables": ["bounded", "precise"],
+      "enabledByCombos": [],
+      "disabledByCombos": []
     },
     {
       "id": "known",
@@ -63,7 +65,7 @@
     },
     {
       "id": "unbounded",
-      "disables": ["bounded"],
+      "disables": ["bounded", "choice"],
       "enables": [],
       "enabledByCombos": [],
       "disabledByCombos": []

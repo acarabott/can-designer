@@ -51,11 +51,18 @@ function render (graph) {
       }
     };
 
-    n.enable = () => n._enabled = true;
-    n.disable = () => n._enabled = false;
-    n.toggle = () => {
-      n._enabled = !n._enabled;
+    n.enable = () => {
+      n._enabled = true;
       n.update();
+    };
+
+    n.disable = () => {
+      n._enabled = false;
+      n.update();
+    };
+
+    n.toggle = () => {
+      n._enabled ? n.disable() : n.enable();
     };
 
     n.disabledAdd = d => {
@@ -66,7 +73,9 @@ function render (graph) {
 
     n.disabledRemove = d => {
       if (n.disabledBy.length === 0) { return; }
-      n.disabledBy.splice(n.disabledBy.findIndex(v => v === d.id), 1);
+      const index = n.disabledBy.findIndex(v => v === d.id);
+      if (index === -1) { return; }
+      n.disabledBy.splice(index, 1);
       n.update();
     };
 
@@ -78,25 +87,41 @@ function render (graph) {
 
     n.enabledRemove = d => {
       if (n.enabledBy.length === 0) { return; }
-      n.enabledBy.splice(n.enabledBy.findIndex(v => v === d.id), 1);
+      const index = n.enabledBy.findIndex(v => v === d.id);
+      if (index === -1) { return; }
+      n.enabledBy.splice(index, 1);
       n.update();
     };
 
     Object.defineProperties(n, {
       disabled: {
         get: () => {
+          if (n.enabledBy.length !== 0) { return false; }
+          const notEnabled = n.enabledBy.length === 0;
           const haveDisabled = n.disabledBy.length > 0;
-          return haveDisabled;
+          const comboDisabled = n.disabledByCombos.some(combo => {
+            return graph.nodes
+              .filter(node => combo.includes(node.id))
+              .every(node => node.enabled);
+          });
+          return haveDisabled || comboDisabled;
         },
       },
       enabled: {
         get: () => {
-          const haveEnabled = n._enabled || n.enabledBy.length > 0;
-          return haveEnabled;
+          if (n.disabledBy.length !== 0) { return false; }
+          const notDisabled = n.disabledBy.length === 0;
+          const userEnabled = n._enabled;
+          const haveEnabled = n.enabledBy.length > 0;
+          const comboEnabled = n.enabledByCombos.some(combo => {
+            return graph.nodes
+              .filter(node => combo.includes(node.id))
+              .every(node => node.enabled);
+          });
+          return userEnabled || haveEnabled || comboEnabled;
         }
       }
     });
-
   });
 
 
@@ -114,8 +139,10 @@ function render (graph) {
     const getAlpha = d => d.enabled ? 1.0 : d.disabled ? 0.1 : 0.5;
     node.selectAll('circle')
       .attr('fill', d => `rgba(43, 156, 212, ${getAlpha(d)})`);
+
     node.selectAll('text')
       .attr('fill', d => `rgba(0, 0, 0, ${getAlpha(d)})`);
+
     node.selectAll('.ring')
       .attr('fill', 'none')
       .attr('stroke', d => `rgba(43, 156, 212, ${d._enabled ? 1.0 : 0.0})`);
