@@ -1,0 +1,19 @@
+{
+  "name": "can-designer",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/acarabott/can-designer.git"
+  },
+  "author": "Arthur Carabott",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/acarabott/can-designer/issues"
+  },
+  "homepage": "https://github.com/acarabott/can-designer#readme"
+}
