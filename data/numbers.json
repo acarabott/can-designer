@@ -2,73 +2,53 @@
   "nodes": [
     {
       "id": "precise",
-      "disables": ["imprecise"],
-      "enables": [],
-      "enabledByCombos": [],
-      "disabledByCombos": []
+      "enabledBy": [["choice"]],
+      "disabledBy": [["imprecise"]]
     },
     {
       "id": "imprecise",
-      "disables": ["precise"],
-      "enables": [],
-      "enabledByCombos": [],
-      "disabledByCombos": []
+      "enabledBy": [],
+      "disabledBy": [["precise"]]
     },
     {
       "id": "random",
-      "disables": ["counting"],
-      "enables": [],
-      "enabledByCombos": [],
-      "disabledByCombos": []
+      "enabledBy": [],
+      "disabledBy": [["counting"], ["known"]]
     },
     {
       "id": "counting",
-      "disables": ["random", "known"],
-      "enables": [],
-      "enabledByCombos": [],
-      "disabledByCombos": []
+      "enabledBy": [],
+      "disabledBy": [["random"], ["counting"]]
     },
     {
       "id": "adjustment",
-      "disables": [],
-      "enables": [],
-      "enabledByCombos": [],
-      "disabledByCombos": []
+      "enabledBy": [],
+      "disabledBy": []
     },
     {
       "id": "choice",
-      "disables": ["unbounded", "counting"],
-      "enables": ["bounded", "precise"],
-      "enabledByCombos": [],
-      "disabledByCombos": []
+      "enabledBy": [],
+      "disabledBy": [["unbounded"]]
     },
     {
       "id": "known",
-      "disables": ["unknown"],
-      "enables": [],
-      "enabledByCombos": [],
-      "disabledByCombos": []
+      "enabledBy": [],
+      "disabledBy": [["unknown"]]
     },
     {
       "id": "unknown",
-      "disables": ["known"],
-      "enables": [],
-      "enabledByCombos": [],
-      "disabledByCombos": []
+      "enabledBy": [],
+      "disabledBy": [["known"]]
     },
     {
       "id": "bounded",
-      "disables": ["unbounded"],
-      "enables": [],
-      "enabledByCombos": [["known", "random"]],
-      "disabledByCombos": []
+      "enabledBy": [["choice"], ["known", "random"]],
+      "disabledBy": [["unbounded"]]
     },
     {
       "id": "unbounded",
-      "disables": ["bounded", "choice"],
-      "enables": [],
-      "enabledByCombos": [],
-      "disabledByCombos": []
+      "enabledBy": [],
+      "disabledBy": [["bounded"], ["choice"]]
     }
   ]
 }

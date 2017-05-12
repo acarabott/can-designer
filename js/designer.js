@@ -31,95 +31,30 @@ function render (graph) {
 
   // set up objects
   graph.nodes.forEach(n => {
-    n._enabled = false;
-    n.disabledBy = [];
-    n.enabledBy = [];
+    n.userEnabled = false;
 
-    // convert list of ids to enable/disable into actual object references
-    ['enables', 'disables'].forEach(l => {
-      n[`${l}Objs`] = n[l].map(id => graph.nodes.find(m => m.id === id));
-    });
-
-    n.update = () => {
-      if (n.enabled) {
-        n.enablesObjs.forEach(o => o.enabledAdd(n));
-        n.disablesObjs.forEach(o => o.disabledAdd(n));
-      }
-      else {
-        n.enablesObjs.forEach(o => o.enabledRemove(n));
-        n.disablesObjs.forEach(o => o.disabledRemove(n));
-      }
-    };
-
-    n.enable = () => {
-      n._enabled = true;
-      n.update();
-    };
-
-    n.disable = () => {
-      n._enabled = false;
-      n.update();
-    };
-
-    n.toggle = () => {
-      n._enabled ? n.disable() : n.enable();
-    };
-
-    n.disabledAdd = d => {
-      if (n.disabledBy.indexOf(d.id) !== -1) { return; }
-      n.disabledBy.push(d.id);
-      n.update();
-    };
-
-    n.disabledRemove = d => {
-      if (n.disabledBy.length === 0) { return; }
-      const index = n.disabledBy.findIndex(v => v === d.id);
-      if (index === -1) { return; }
-      n.disabledBy.splice(index, 1);
-      n.update();
-    };
-
-    n.enabledAdd = d => {
-      if (n.enabledBy.indexOf(d.id) !== -1) { return; }
-      n.enabledBy.push(d);
-      n.update();
-    };
-
-    n.enabledRemove = d => {
-      if (n.enabledBy.length === 0) { return; }
-      const index = n.enabledBy.findIndex(v => v === d.id);
-      if (index === -1) { return; }
-      n.enabledBy.splice(index, 1);
-      n.update();
-    };
+    n.enable = () => n.userEnabled = true;
+    n.disable = () => n.userEnabled = false;
+    n.toggle = () => n.userEnabled ? n.disable() : n.enable();
 
     Object.defineProperties(n, {
-      disabled: {
-        get: () => {
-          if (n.enabledBy.length !== 0) { return false; }
-          const notEnabled = n.enabledBy.length === 0;
-          const haveDisabled = n.disabledBy.length > 0;
-          const comboDisabled = n.disabledByCombos.some(combo => {
-            return graph.nodes
-              .filter(node => combo.includes(node.id))
-              .every(node => node.enabled);
-          });
-          return haveDisabled || comboDisabled;
-        },
-      },
       enabled: {
         get: () => {
-          if (n.disabledBy.length !== 0) { return false; }
-          const notDisabled = n.disabledBy.length === 0;
-          const userEnabled = n._enabled;
-          const haveEnabled = n.enabledBy.length > 0;
-          const comboEnabled = n.enabledByCombos.some(combo => {
+          return n.userEnabled || n.enabledBy.some(ids => {
             return graph.nodes
-              .filter(node => combo.includes(node.id))
+              .filter(node => ids.includes(node.id))
               .every(node => node.enabled);
           });
-          return userEnabled || haveEnabled || comboEnabled;
         }
+      },
+      disabled: {
+        get: () => {
+          return n.disabledBy.some(ids => {
+            return graph.nodes
+              .filter(node => ids.includes(node.id))
+              .every(node => node.enabled);
+          });
+        },
       }
     });
   });
@@ -136,16 +71,16 @@ function render (graph) {
         .on('end', dragended));
 
   function updateCircles() {
-    const getAlpha = d => d.enabled ? 1.0 : d.disabled ? 0.1 : 0.5;
+    const getAlpha = n => n.enabled ? 1.0 : n.disabled ? 0.1 : 0.5;
     node.selectAll('circle')
-      .attr('fill', d => `rgba(43, 156, 212, ${getAlpha(d)})`);
+      .attr('fill', n => `rgba(43, 156, 212, ${getAlpha(n)})`);
 
     node.selectAll('text')
-      .attr('fill', d => `rgba(0, 0, 0, ${getAlpha(d)})`);
+      .attr('fill', n => `rgba(0, 0, 0, ${getAlpha(n)})`);
 
     node.selectAll('.ring')
       .attr('fill', 'none')
-      .attr('stroke', d => `rgba(43, 156, 212, ${d._enabled ? 1.0 : 0.0})`);
+      .attr('stroke', n => `rgba(43, 156, 212, ${n.userEnabled ? 1.0 : 0.0})`);
   }
 
   node.append('circle')
@@ -164,7 +99,6 @@ function render (graph) {
 
   node.on('click', d => {
     if (d.disabled) { return; }
-
     d.toggle();
     updateCircles();
   });
