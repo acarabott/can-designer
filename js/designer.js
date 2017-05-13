@@ -107,7 +107,7 @@ function render (graph) {
   node.append('text')
     .attr('dx', 12)
     .attr('dy', 20)
-    .text(d => d.id);
+    .text(d => d.id.replace(/_/g, ' '));
 
   node.on('click', d => {
     if (d.disabled) { return; }

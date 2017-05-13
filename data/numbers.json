@@ -67,16 +67,16 @@
       "disabledBy": [["bounded"], ["choice"]]
     },
     {
-      "id": "speedImportant",
+      "id": "speed_important",
       "type": "2",
       "enabledBy": [],
-      "disabledBy": [["speedNotImportant"]]
+      "disabledBy": [["speed_not_important"]]
     },
     {
-      "id": "speedNotImportant",
+      "id": "speed_not_important",
       "type": "2",
       "enabledBy": [],
-      "disabledBy": [["speedImportant"]]
+      "disabledBy": [["speed_important"]]
     }
   ]
 }
