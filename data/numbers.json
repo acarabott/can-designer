@@ -4,79 +4,106 @@
       "id": "precise",
       "type": "1",
       "enabledBy": [["choice"]],
-      "disabledBy": [["imprecise"]]
+      "disabledBy": [["imprecise"]],
+      "properties": []
     },
     {
       "id": "imprecise",
       "type": "1",
       "enabledBy": [],
-      "disabledBy": [["precise"], ["choice"]]
+      "disabledBy": [["precise"], ["choice"]],
+      "properties": []
     },
     {
       "id": "random",
       "type": "1",
       "enabledBy": [],
-      "disabledBy": [["counting"], ["known"]]
+      "disabledBy": [["counting"], ["known"]],
+      "properties": []
     },
     {
       "id": "counting",
       "type": "1",
       "enabledBy": [],
-      "disabledBy": [["random"], ["counting"]]
+      "disabledBy": [["random"], ["counting"]],
+      "properties": []
     },
     {
       "id": "choice",
       "type": "1",
       "enabledBy": [],
-      "disabledBy": [["unbounded"], ["known"]]
+      "disabledBy": [["unbounded"], ["known"]],
+      "properties": []
     },
     {
       "id": "adjustment",
       "type": "2",
       "enabledBy": [],
-      "disabledBy": ["setOnce"]
+      "disabledBy": ["set_once"],
+      "properties": []
     },
     {
-      "id": "setOnce",
+      "id": "set_once",
       "type": "2",
       "enabledBy": [],
-      "disabledBy": ["adjustment"]
+      "disabledBy": ["adjustment"],
+      "properties": []
     },
     {
       "id": "known",
       "type": "2",
       "enabledBy": [],
-      "disabledBy": [["unknown"]]
+      "disabledBy": [["unknown"]],
+      "properties": []
     },
     {
       "id": "unknown",
       "type": "2",
       "enabledBy": [],
-      "disabledBy": [["known"]]
+      "disabledBy": [["known"]],
+      "properties": []
     },
     {
       "id": "bounded",
       "type": "2",
       "enabledBy": [["choice"], ["known", "random"]],
-      "disabledBy": [["unbounded"]]
+      "disabledBy": [["unbounded"]],
+      "properties": ["stepped", "wrapped"]
     },
     {
       "id": "unbounded",
       "type": "2",
       "enabledBy": [],
-      "disabledBy": [["bounded"], ["choice"]]
+      "disabledBy": [["bounded"], ["choice"]],
+      "properties": []
     },
     {
       "id": "speed_important",
       "type": "2",
       "enabledBy": [],
-      "disabledBy": [["speed_not_important"]]
+      "disabledBy": [["speed_not_important"]],
+      "properties": []
     },
     {
       "id": "speed_not_important",
       "type": "2",
       "enabledBy": [],
-      "disabledBy": [["speed_important"]]
+      "disabledBy": [["speed_important"]],
+      "properties": []
+    },
+    {
+      "id": "stepped",
+      "type": "property",
+      "enabledBy": [],
+      "disabledBy": [],
+      "properties": []
+    },
+    {
+      "id": "wrapped",
+      "type": "property",
+      "enabledBy": [],
+      "disabledBy": [],
+      "properties": []
     }
   ]
 }
