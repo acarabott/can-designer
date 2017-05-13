@@ -72,15 +72,27 @@ function render (graph) {
 
   function updateCircles() {
     const getAlpha = n => n.enabled ? 1.0 : n.disabled ? 0.1 : 0.5;
+    const getColor = n => {
+      const colors = {
+        blue: [43, 156, 212],
+        red: [212, 100, 100],
+        orange: [249, 182, 118],
+        green: [43, 212, 156],
+        grey: [89, 125, 148],
+      };
+      const lookup = { 1: 'blue', 2: 'green', 3: 'orange', 4: 'grey', 5: 'red' };
+      return colors[lookup[n.type]].join(',');
+    };
+
     node.selectAll('circle')
-      .attr('fill', n => `rgba(43, 156, 212, ${getAlpha(n)})`);
+      .attr('fill', n => `rgba(${getColor(n)}, ${getAlpha(n)})`);
 
     node.selectAll('text')
       .attr('fill', n => `rgba(0, 0, 0, ${getAlpha(n)})`);
 
     node.selectAll('.ring')
       .attr('fill', 'none')
-      .attr('stroke', n => `rgba(43, 156, 212, ${n.userEnabled ? 1.0 : 0.0})`);
+      .attr('stroke', n => `rgba(${getColor(n)}, ${n.userEnabled ? 1.0 : 0.0})`);
   }
 
   node.append('circle')

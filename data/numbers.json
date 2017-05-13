@@ -2,53 +2,81 @@
   "nodes": [
     {
       "id": "precise",
+      "type": "1",
       "enabledBy": [["choice"]],
       "disabledBy": [["imprecise"]]
     },
     {
       "id": "imprecise",
+      "type": "1",
       "enabledBy": [],
-      "disabledBy": [["precise"]]
+      "disabledBy": [["precise"], ["choice"]]
     },
     {
       "id": "random",
+      "type": "1",
       "enabledBy": [],
       "disabledBy": [["counting"], ["known"]]
     },
     {
       "id": "counting",
+      "type": "1",
       "enabledBy": [],
       "disabledBy": [["random"], ["counting"]]
     },
     {
-      "id": "adjustment",
+      "id": "choice",
+      "type": "1",
       "enabledBy": [],
-      "disabledBy": []
+      "disabledBy": [["unbounded"], ["known"]]
     },
     {
-      "id": "choice",
+      "id": "adjustment",
+      "type": "2",
       "enabledBy": [],
-      "disabledBy": [["unbounded"]]
+      "disabledBy": ["setOnce"]
+    },
+    {
+      "id": "setOnce",
+      "type": "2",
+      "enabledBy": [],
+      "disabledBy": ["adjustment"]
     },
     {
       "id": "known",
+      "type": "2",
       "enabledBy": [],
       "disabledBy": [["unknown"]]
     },
     {
       "id": "unknown",
+      "type": "2",
       "enabledBy": [],
       "disabledBy": [["known"]]
     },
     {
       "id": "bounded",
+      "type": "2",
       "enabledBy": [["choice"], ["known", "random"]],
       "disabledBy": [["unbounded"]]
     },
     {
       "id": "unbounded",
+      "type": "2",
       "enabledBy": [],
       "disabledBy": [["bounded"], ["choice"]]
+    },
+    {
+      "id": "speedImportant",
+      "type": "2",
+      "enabledBy": [],
+      "disabledBy": [["speedNotImportant"]]
+    },
+    {
+      "id": "speedNotImportant",
+      "type": "2",
+      "enabledBy": [],
+      "disabledBy": [["speedImportant"]]
     }
   ]
 }
