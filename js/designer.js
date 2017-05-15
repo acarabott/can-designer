@@ -6,7 +6,7 @@ const svg = d3.select('body').append('svg')
   .attr('height', height);
 
 const simulation = d3.forceSimulation()
-  .force('link', d3.forceLink().id(d => d.id).distance(d => 80))
+  .force('link', d3.forceLink().id(d => d.id).distance(d => 100))
   .force('charge', d3.forceManyBody().strength(-10))
   .force('center', d3.forceCenter(width / 2 , height / 2))
   .force('collide', d3.forceCollide().radius(d => d.radius));
@@ -196,14 +196,6 @@ function gogo (graph) {
           .on('drag', dragged)
           .on('end', dragended));
 
-    graph.properties.forEach(p => {
-      if (p.type === 'property') {
-        const parent = graph.nodes.find(gn => gn.properties.includes(p.id));
-        console.log(parent.x);
-        console.log(parent);
-      }
-    });
-
     if (link !== undefined) { link.remove(); }
     createLinks();
     link = svg.append('g')
@@ -256,10 +248,30 @@ function gogo (graph) {
     });
 
     render();
+
+    const list = document.getElementById('list');
+    Array.from(list.children).forEach(c => c.remove());
+    graph.nodes.filter(n => n.enabled).forEach(n => {
+      const li = document.createElement('li');
+      li.textContent = n.id.replace(/_/g, ' ');
+      list.appendChild(li);
+    });
+
+    const suggestions = document.getElementById('suggestions');
+    Array.from(suggestions.children).forEach(c => c.remove());
+    graph.properties.filter(n => n.visible).forEach(n => {
+      const li = document.createElement('li');
+      li.textContent = n.id.replace(/_/g, ' ');
+      suggestions.appendChild(li);
+    });
+    graph.properties.filter(n => n.enabled).forEach(n => {
+      const li = document.createElement('li');
+      li.textContent = n.id.replace(/_/g, ' ');
+      list.appendChild(li);
+    });
   }
 
   restart();
-
 }
 
 d3.json('data/numbers.json', (error, graph) => {

@@ -41,3 +41,23 @@ h1 {
   pointer-events: none;
   font: 10px Lato sans-serif;
 }
+
+#list-wrap {
+  position: fixed;
+  right: 0;
+  top: 0;
+  height: 100vh;
+  width: 20vw;
+  border-left: 1px grey solid;
+  background: rgba(255, 255, 255, 0.7);
+}
+
+#list-content {
+  margin-top: 20vh;
+  padding: 10px;
+}
+
+#list-wrap ul {
+  margin-left:20px;
+
+}
