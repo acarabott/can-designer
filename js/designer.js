@@ -6,7 +6,7 @@ const svg = d3.select('body').append('svg')
   .attr('height', height);
 
 const simulation = d3.forceSimulation()
-  .force('link', d3.forceLink().id(d => d.id).distance(d => 100))
+  .force('link', d3.forceLink().id(d => d.id).distance(d => 150))
   .force('charge', d3.forceManyBody().strength(-10))
   .force('center', d3.forceCenter(width / 2 , height / 2))
   .force('collide', d3.forceCollide().radius(d => d.radius));
@@ -79,7 +79,8 @@ function gogo (graph) {
             const radii = {
               1: 50,
               2: 40,
-              property: 20
+              property: 20,
+              requirement: 40
             };
 
             return radii[n.type];
@@ -101,7 +102,7 @@ function gogo (graph) {
         green: [43, 212, 156],
         grey: [89, 125, 148],
       };
-      const lookup = { 1: 'blue', 2: 'green', property: 'orange', 4: 'grey', 5: 'red' };
+      const lookup = { 1: 'blue', 2: 'green', property: 'orange', requirement: 'red', 5: 'red' };
       return colors[lookup[n.type]].join(',');
     };
     node.attr('display', n => n.visible ? '' : 'none');
@@ -256,6 +257,16 @@ function gogo (graph) {
       li.textContent = n.id.replace(/_/g, ' ');
       list.appendChild(li);
     });
+
+    const requirements = document.getElementById('requirements');
+    Array.from(requirements.children).forEach(c => c.remove());
+    graph.properties.filter(n => n.type === 'requirement' && n.enabled).forEach(n => {
+      const li = document.createElement('li');
+      li.textContent = n.id.replace(/_/g, ' ');
+      requirements.appendChild(li);
+    });
+
+
 
     const suggestions = document.getElementById('suggestions');
     Array.from(suggestions.children).forEach(c => c.remove());

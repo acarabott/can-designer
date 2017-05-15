@@ -42,14 +42,17 @@
       "disabledBy": [["unexpected"]],
       "properties": [
         "keeping_track_of_something",
-        "primarily_increasing_not_decreasing"
+        "primarily_increasing_not_decreasing",
+        "increment_control",
+        "decrement_control",
+        "reset_control"
       ]
     },
     {
       "id": "choice",
       "type": "1",
       "enabledBy": [],
-      "disabledBy": [["unbounded"], ["known"]],
+      "disabledBy": [["unbounded"], ["known"], ["counting"]],
       "properties": [
         "limited_selection"
       ]
@@ -61,7 +64,9 @@
       "disabledBy": ["set_once"],
       "properties": [
         "decreased_range",
-        "increased_precision"
+        "increased_precision",
+        "avoid_modal_changes",
+        "fluent_mental_model"
       ]
     },
     {
@@ -69,28 +74,32 @@
       "type": "2",
       "enabledBy": [],
       "disabledBy": ["adjustment"],
-      "properties": []
+      "properties": ["speed_or_number_of_steps_low_priority"]
     },
     {
       "id": "known",
       "type": "2",
       "enabledBy": [],
       "disabledBy": [["unknown"]],
-      "properties": []
+      "properties": ["minimise_error", "adjustment_low_priority"]
     },
     {
       "id": "unknown",
       "type": "2",
       "enabledBy": [],
       "disabledBy": [["known"]],
-      "properties": []
+      "properties": [
+        "adjustment_important",
+        "prioritise_speed",
+        "ease_of_comparison_important"
+      ]
     },
     {
       "id": "bounded",
       "type": "2",
       "enabledBy": [["choice"], ["known", "unexpected"]],
       "disabledBy": [["unbounded"]],
-      "properties": ["stepped", "wrapped"]
+      "properties": ["stepped", "wrapped", "excluding_useless_or_dangerous_values"]
     },
     {
       "id": "unbounded",
@@ -104,14 +113,14 @@
       "type": "2",
       "enabledBy": [],
       "disabledBy": [["speed_not_important"]],
-      "properties": []
+      "properties": ["use_small_muscles"]
     },
     {
       "id": "speed_not_important",
       "type": "2",
       "enabledBy": [],
       "disabledBy": [["speed_important"]],
-      "properties": []
+      "properties": ["can_use_big_muscles"]
     }
   ],
   "properties": [
@@ -131,7 +140,7 @@
     },
     {
       "id": "control_over_each_place_value",
-      "type": "property",
+      "type": "requirement",
       "enabledBy": [],
       "disabledBy": [],
       "properties": []
@@ -238,6 +247,111 @@
       "id": "increased_precision",
       "type": "property",
       "enabledBy": [],
+      "disabledBy": [],
+      "properties": []
+    },
+    {
+      "id": "minimise_error",
+      "type": "requirement",
+      "enabledBy": [],
+      "disabledBy": [],
+      "properties": []
+    },
+    {
+      "id": "adjustment_low_priority",
+      "type": "property",
+      "enabledBy": [],
+      "disabledBy": [],
+      "properties": []
+    },
+    {
+      "id": "adjustment_important",
+      "type": "property",
+      "enabledBy": [],
+      "disabledBy": [],
+      "properties": []
+    },
+    {
+      "id": "prioritise_speed",
+      "type": "property",
+      "enabledBy": [],
+      "disabledBy": [],
+      "properties": []
+    },
+    {
+      "id": "ease_of_comparison_important",
+      "type": "property",
+      "enabledBy": [],
+      "disabledBy": [],
+      "properties": []
+    },
+    {
+      "id": "excluding_useless_or_dangerous_values",
+      "type": "property",
+      "enabledBy": [],
+      "disabledBy": [],
+      "properties": []
+    },
+    {
+      "id": "be_fast!",
+      "type": "property",
+      "enabledBy": [],
+      "disabledBy": [],
+      "properties": []
+    },
+    {
+      "id": "use_small_muscles",
+      "type": "property",
+      "enabledBy": [],
+      "disabledBy": [],
+      "properties": []
+    },
+    {
+      "id": "can_use_big_muscles",
+      "type": "property",
+      "enabledBy": [],
+      "disabledBy": [],
+      "properties": []
+    },
+    {
+      "id": "speed_or_number_of_steps_low_priority",
+      "type": "property",
+      "enabledBy": [],
+      "disabledBy": [],
+      "properties": []
+    },
+    {
+      "id": "avoid_modal_changes",
+      "type": "property",
+      "enabledBy": [],
+      "disabledBy": [],
+      "properties": []
+    },
+    {
+      "id": "fluent_mental_model",
+      "type": "property",
+      "enabledBy": [],
+      "disabledBy": [],
+      "properties": []
+    },
+    {
+      "id": "increment_control",
+      "type": "requirement",
+      "enabledBy": [["counting"]],
+      "disabledBy": [],
+      "properties": []
+    },
+    {
+      "id": "decrement_control",
+      "type": "property",
+      "enabledBy": [],
+      "disabledBy": [],
+      "properties": []
+    },
+    {
+      "id": "reset_control",
+      "type": "requirement",
+      "enabledBy": [["counting"]],
       "disabledBy": [],
       "properties": []
     }
