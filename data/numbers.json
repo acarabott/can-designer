@@ -5,42 +5,64 @@
       "type": "1",
       "enabledBy": [["choice"]],
       "disabledBy": [["imprecise"]],
-      "properties": []
+      "properties": [
+        "control_over_each_place_value",
+        "control_over_degree_of_precision",
+        "number_is_thing_of_interest"
+      ]
     },
     {
       "id": "imprecise",
       "type": "1",
       "enabledBy": [],
       "disabledBy": [["precise"], ["choice"]],
-      "properties": []
+      "properties": [
+        "number_not_real_thing_of_interest",
+        "sketch_of_a number",
+        "may_evolve_into_needing_precise_value"
+      ]
     },
     {
-      "id": "random",
+      "id": "unexpected",
       "type": "1",
       "enabledBy": [],
       "disabledBy": [["counting"], ["known"]],
-      "properties": []
+      "properties": [
+        "often_random",
+        "mapped_to_something_unusual",
+        "form_of_exploration",
+        "looking_for_surprise",
+        "breaking_from_self"
+      ]
     },
     {
       "id": "counting",
       "type": "1",
       "enabledBy": [],
-      "disabledBy": [["random"], ["counting"]],
-      "properties": []
+      "disabledBy": [["unexpected"]],
+      "properties": [
+        "keeping_track_of_something",
+        "primarily_increasing_not_decreasing"
+      ]
     },
     {
       "id": "choice",
       "type": "1",
       "enabledBy": [],
       "disabledBy": [["unbounded"], ["known"]],
-      "properties": []
+      "properties": [
+        "limited_selection"
+      ]
     },
     {
       "id": "adjustment",
       "type": "2",
       "enabledBy": [],
       "disabledBy": ["set_once"],
-      "properties": []
+      "properties": [
+        "decreased_range",
+        "increased_precision"
+      ]
     },
     {
       "id": "set_once",
@@ -66,7 +88,7 @@
     {
       "id": "bounded",
       "type": "2",
-      "enabledBy": [["choice"], ["known", "random"]],
+      "enabledBy": [["choice"], ["known", "unexpected"]],
       "disabledBy": [["unbounded"]],
       "properties": ["stepped", "wrapped"]
     },
@@ -90,7 +112,9 @@
       "enabledBy": [],
       "disabledBy": [["speed_important"]],
       "properties": []
-    },
+    }
+  ],
+  "properties": [
     {
       "id": "stepped",
       "type": "property",
@@ -100,6 +124,118 @@
     },
     {
       "id": "wrapped",
+      "type": "property",
+      "enabledBy": [],
+      "disabledBy": [],
+      "properties": []
+    },
+    {
+      "id": "control_over_each_place_value",
+      "type": "property",
+      "enabledBy": [],
+      "disabledBy": [],
+      "properties": []
+    },
+    {
+      "id": "control_over_degree_of_precision",
+      "type": "property",
+      "enabledBy": [],
+      "disabledBy": [],
+      "properties": []
+    },
+    {
+      "id": "number_is_thing_of_interest",
+      "type": "property",
+      "enabledBy": [],
+      "disabledBy": [],
+      "properties": []
+    },
+    {
+      "id": "number_not_real_thing_of_interest",
+      "type": "property",
+      "enabledBy": [],
+      "disabledBy": [],
+      "properties": []
+    },
+    {
+      "id": "sketch_of_a number",
+      "type": "property",
+      "enabledBy": [],
+      "disabledBy": [],
+      "properties": []
+    },
+    {
+      "id": "may_evolve_into_needing_precise_value",
+      "type": "property",
+      "enabledBy": [],
+      "disabledBy": [],
+      "properties": []
+    },
+    {
+      "id": "often_random",
+      "type": "property",
+      "enabledBy": [],
+      "disabledBy": [],
+      "properties": []
+    },
+    {
+      "id": "mapped_to_something_unusual",
+      "type": "property",
+      "enabledBy": [],
+      "disabledBy": [],
+      "properties": []
+    },
+    {
+      "id": "form_of_exploration",
+      "type": "property",
+      "enabledBy": [],
+      "disabledBy": [],
+      "properties": []
+    },
+    {
+      "id": "looking_for_surprise",
+      "type": "property",
+      "enabledBy": [],
+      "disabledBy": [],
+      "properties": []
+    },
+    {
+      "id": "breaking_from_self",
+      "type": "property",
+      "enabledBy": [],
+      "disabledBy": [],
+      "properties": []
+    },
+    {
+      "id": "keeping_track_of_something",
+      "type": "property",
+      "enabledBy": [],
+      "disabledBy": [],
+      "properties": []
+    },
+    {
+      "id": "primarily_increasing_not_decreasing",
+      "type": "property",
+      "enabledBy": [],
+      "disabledBy": [],
+      "properties": []
+    },
+    {
+      "id": "limited_selection",
+      "type": "property",
+      "enabledBy": [],
+      "disabledBy": [],
+      "properties": []
+    },
+    {
+      "id": "decreased_range",
+      "type": "property",
+      "enabledBy": [],
+      "disabledBy": [],
+      "properties": []
+    },
+    {
+      "id": "increased_precision",
       "type": "property",
       "enabledBy": [],
       "disabledBy": [],
