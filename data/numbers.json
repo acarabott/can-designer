@@ -140,7 +140,7 @@
     },
     {
       "id": "control_over_each_place_value",
-      "type": "requirement",
+      "type": "property",
       "enabledBy": [],
       "disabledBy": [],
       "properties": []
@@ -154,7 +154,14 @@
     },
     {
       "id": "number_is_thing_of_interest",
-      "type": "property",
+      "type": "requirement",
+      "enabledBy": [],
+      "disabledBy": [],
+      "properties": ["show_number_in_feedback"]
+    },
+    {
+      "id": "show_number_in_feedback",
+      "type": "requirement",
       "enabledBy": [],
       "disabledBy": [],
       "properties": []

@@ -51,24 +51,33 @@ function gogo (graph) {
           get: () => {
             if (['1', '2'].includes(n.type)) { return true; }
 
-            return graph.nodes
+            return [...graph.nodes, ...graph.properties]
               .filter(node => node.properties.includes(n.id))
               .some(node => node.enabled);
           }
         },
         enabled: {
           get: () => {
-            return n.userEnabled || n.enabledBy.some(ids => {
-              return graph.nodes
+            const enabledByOther = n.enabledBy.some(ids => {
+              return [...graph.nodes, ...graph.properties]
                 .filter(node => ids.includes(node.id))
                 .every(node => node.enabled);
             });
+            let requirementEnabled = false;
+            if (n.type === 'requirement') {
+              const parent = [...graph.nodes, ...graph.properties].find(node => {
+                return node.properties.includes(n.id);
+              });
+              requirementEnabled = parent !== undefined && parent.enabled;
+            }
+
+            return n.userEnabled || enabledByOther || requirementEnabled;
           }
         },
         disabled: {
           get: () => {
             return n.disabledBy.some(ids => {
-              return graph.nodes
+              return [...graph.nodes, ...graph.properties]
                 .filter(node => ids.includes(node.id))
                 .every(node => node.enabled);
             });
@@ -80,7 +89,7 @@ function gogo (graph) {
               1: 50,
               2: 40,
               property: 20,
-              requirement: 40
+              requirement: 30
             };
 
             return radii[n.type];
@@ -252,7 +261,7 @@ function gogo (graph) {
 
     const list = document.getElementById('list');
     Array.from(list.children).forEach(c => c.remove());
-    graph.nodes.filter(n => n.enabled).forEach(n => {
+    graph.nodes.filter(n => n.userEnabled || (n.enabled && n.type !== 'requirement')).forEach(n => {
       const li = document.createElement('li');
       li.textContent = n.id.replace(/_/g, ' ');
       list.appendChild(li);
@@ -260,7 +269,7 @@ function gogo (graph) {
 
     const requirements = document.getElementById('requirements');
     Array.from(requirements.children).forEach(c => c.remove());
-    graph.properties.filter(n => n.type === 'requirement' && n.enabled).forEach(n => {
+    graph.properties.filter(n => n.type === 'requirement' && n.enabled && !n.userEnabled).forEach(n => {
       const li = document.createElement('li');
       li.textContent = n.id.replace(/_/g, ' ');
       requirements.appendChild(li);
@@ -275,10 +284,10 @@ function gogo (graph) {
       li.textContent = n.id.replace(/_/g, ' ');
       suggestions.appendChild(li);
     });
-    graph.properties.filter(n => n.enabled).forEach(n => {
+    graph.properties.filter(n => n.enabled && !n.userEnabled).forEach(n => {
       const li = document.createElement('li');
       li.textContent = n.id.replace(/_/g, ' ');
-      list.appendChild(li);
+      suggestions.appendChild(li);
     });
   }
 
