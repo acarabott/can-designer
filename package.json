@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/acarabott/can-designer/issues"
   },
-  "homepage": "https://github.com/acarabott/can-designer#readme"
+  "homepage": "https://github.com/acarabott/can-designer#readme",
+  "dependencies": {
+    "d3": "^4.8.0"
+  }
 }
