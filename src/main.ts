@@ -82,7 +82,7 @@ const dragHandler = d3
         d.fy = null;
     });
 
-function main(graph: Graph) {
+const main = (graph: Graph) => {
     graph.links = [];
 
     // set up objects
@@ -152,7 +152,7 @@ function main(graph: Graph) {
         });
     });
 
-    function render() {
+    const render = () => {
         if (node === undefined || prop === undefined || link === undefined) {
             return;
         }
@@ -189,9 +189,9 @@ function main(graph: Graph) {
 
         link.attr("display", (l) => (isNode(l.source) ? (l.source.enabled ? "" : "none") : ""));
         link.attr("stroke-width", 2);
-    }
+    };
 
-    function ticked() {
+    const ticked = () => {
         if (node === undefined || prop === undefined || link === undefined) {
             return;
         }
@@ -205,9 +205,9 @@ function main(graph: Graph) {
             .attr("y1", (l: Link) => (isNode(l.source) ? l.source.y ?? 0 : 0))
             .attr("x2", (l: Link) => (isNode(l.target) ? l.target.x ?? 0 : 0))
             .attr("y2", (l: Link) => (isNode(l.target) ? l.target.y ?? 0 : 0));
-    }
+    };
 
-    function createLinks() {
+    const createLinks = () => {
         graph.links = [];
         [graph.nodes, graph.properties].forEach((set) => {
             set.forEach((n: Node) => {
@@ -224,7 +224,7 @@ function main(graph: Graph) {
                 }
             });
         });
-    }
+    };
 
     let node: d3.Selection<SVGGElement, Node, SVGGElement, unknown> | undefined;
     let prop: d3.Selection<SVGGElement, Node, SVGGElement, unknown> | undefined;
@@ -360,7 +360,7 @@ function main(graph: Graph) {
     };
 
     restart();
-}
+};
 
 d3.json("data/numbers.json", (error, graph: Graph) => {
     if (error) {
