@@ -21,7 +21,7 @@ type Link = d3.SimulationLinkDatum<Node>;
 const isNode = (node: unknown): node is Node => typeof node === "object";
 
 interface Graph {
-    nodes: Node[];
+    types: Node[];
     properties: Node[];
     links: Link[];
 }
@@ -86,7 +86,7 @@ const main = (graph: Graph) => {
     graph.links = [];
 
     // set up objects
-    [graph.nodes, graph.properties].forEach((set) => {
+    [graph.types, graph.properties].forEach((set) => {
         set.forEach((n: Node) => {
             n.userEnabled = false;
 
@@ -104,7 +104,7 @@ const main = (graph: Graph) => {
                             return true;
                         }
 
-                        return [...graph.nodes, ...graph.properties]
+                        return [...graph.types, ...graph.properties]
                             .filter((node) => node.properties.includes(n.id))
                             .some((node) => node.enabled);
                     },
@@ -112,13 +112,13 @@ const main = (graph: Graph) => {
                 enabled: {
                     get: () => {
                         const enabledByOther = n.enabledBy.some((ids) => {
-                            return [...graph.nodes, ...graph.properties]
+                            return [...graph.types, ...graph.properties]
                                 .filter((node) => ids.includes(node.id))
                                 .every((node) => node.enabled);
                         });
                         let requirementEnabled = false;
                         if (n.type === "requirement") {
-                            const parent = [...graph.nodes, ...graph.properties].find((node) => {
+                            const parent = [...graph.types, ...graph.properties].find((node) => {
                                 return node.properties.includes(n.id);
                             });
                             requirementEnabled = parent !== undefined && parent.enabled;
@@ -130,7 +130,7 @@ const main = (graph: Graph) => {
                 disabled: {
                     get: () => {
                         return n.disabledBy.some((ids) => {
-                            return [...graph.nodes, ...graph.properties]
+                            return [...graph.types, ...graph.properties]
                                 .filter((node) => ids.includes(node.id))
                                 .every((node) => node.enabled);
                         });
@@ -209,11 +209,11 @@ const main = (graph: Graph) => {
 
     const createLinks = () => {
         graph.links = [];
-        [graph.nodes, graph.properties].forEach((set) => {
+        [graph.types, graph.properties].forEach((set) => {
             set.forEach((n: Node) => {
                 if (n.enabled) {
                     n.properties.forEach((prop) => {
-                        const target = [...graph.nodes, ...graph.properties].find((n: Node) => n.id === prop);
+                        const target = [...graph.types, ...graph.properties].find((n: Node) => n.id === prop);
                         if (target !== undefined) {
                             graph.links.push({
                                 source: n,
@@ -238,7 +238,7 @@ const main = (graph: Graph) => {
             .append("g")
             .attr("class", "nodes")
             .selectAll("circle")
-            .data(graph.nodes)
+            .data(graph.types)
             .enter()
             .append("g")
             .call(dragHandler);
@@ -264,7 +264,7 @@ const main = (graph: Graph) => {
 
         link = svg.append("g").attr("class", "links").selectAll("line").data(graph.links).enter().append("line");
 
-        simulation.nodes([...graph.nodes, ...graph.properties].filter((n: Node) => n.visible)).on("tick", ticked);
+        simulation.nodes([...graph.types, ...graph.properties].filter((n: Node) => n.visible)).on("tick", ticked);
 
         simulation.force("link", d3.forceLink(graph.links));
 
@@ -315,7 +315,7 @@ const main = (graph: Graph) => {
 
         Array.from(list.children).forEach((c) => c.remove());
 
-        graph.nodes
+        graph.types
             .filter((n: Node) => n.userEnabled || (n.enabled && n.type !== "requirement"))
             .forEach((n: Node) => {
                 const li = document.createElement("li");
