@@ -26,11 +26,7 @@ interface Graph {
     links: Link[];
 }
 
-const width = 1000;
-const height = 700;
-
-const svg = d3.select("body").append("svg").attr("width", width).attr("height", height);
-
+const svg = d3.select("body").append("svg");
 const simulation = d3
     .forceSimulation<Node, Link>()
     .force(
@@ -41,11 +37,24 @@ const simulation = d3
             .distance((_d) => 150),
     )
     .force("charge", d3.forceManyBody().strength(-10))
-    .force("center", d3.forceCenter(width / 2, height / 2))
     .force(
         "collide",
         d3.forceCollide<Node>().radius((d: Node) => d.radius),
     );
+
+const updateSize = () => {
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+
+    svg.attr("width", width);
+    svg.attr("height", height);
+
+    simulation.force("center", d3.forceCenter(width / 2, height / 2));
+};
+
+window.addEventListener("resize", updateSize, { passive: true });
+
+updateSize();
 
 const getEvent = (d3: unknown) => <d3.D3DragEvent<SVGGElement, Node, SVGGElement>>(d3 as any).event;
 const dragHandler = d3
@@ -85,8 +94,8 @@ function main(graph: Graph) {
             n.disable = () => (n.userEnabled = false);
             n.toggle = () => (n.userEnabled ? n.disable() : n.enable());
 
-            n.x = width / 2;
-            n.y = height / 2;
+            n.x = parseInt(svg.attr("width")) / 2;
+            n.y = parseInt(svg.attr("height")) / 2;
 
             Object.defineProperties(n, {
                 visible: {
