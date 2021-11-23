@@ -1,22 +1,29 @@
 {
-  "name": "can-designer",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/acarabott/can-designer.git"
-  },
-  "author": "Arthur Carabott",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/acarabott/can-designer/issues"
-  },
-  "homepage": "https://github.com/acarabott/can-designer#readme",
-  "dependencies": {
-    "d3": "^4.8.0"
-  }
+    "name": "can-designer",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "dev": "vite",
+        "build": "tsc && vite build",
+        "serve": "vite preview"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/acarabott/can-designer.git"
+    },
+    "author": "Arthur Carabott",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/acarabott/can-designer/issues"
+    },
+    "homepage": "https://github.com/acarabott/can-designer#readme",
+    "dependencies": {
+        "d3": "^4.8.0"
+    },
+    "devDependencies": {
+        "@types/d3": "^4.8.0",
+        "typescript": "^4.5.2",
+        "vite": "^2.6.14"
+    }
 }
