@@ -320,10 +320,7 @@ const main = (graph: Graph) => {
 
         render(newState);
 
-        const list = document.getElementById("list");
-        if (list === null) {
-            throw new ReferenceError("Couldn't find element with id #list");
-        }
+        const list = getById("list");
 
         Array.from(list.children).forEach((c) => c.remove());
 
@@ -335,10 +332,7 @@ const main = (graph: Graph) => {
                 list.appendChild(li);
             });
 
-        const requirements = document.getElementById("requirements");
-        if (requirements === null) {
-            throw new ReferenceError("Couldn't find element with id #requirements");
-        }
+        const requirements = getById("requirements");
         Array.from(requirements.children).forEach((c) => c.remove());
         graph.properties
             .filter((n: Node) => n.type === "requirement" && n.enabled && !n.userEnabled)
@@ -348,10 +342,7 @@ const main = (graph: Graph) => {
                 requirements.appendChild(li);
             });
 
-        const suggestions = document.getElementById("suggestions");
-        if (suggestions === null) {
-            throw new ReferenceError("Couldn't find element with id #suggestions");
-        }
+        const suggestions = getById("suggestions");
         Array.from(suggestions.children).forEach((c) => c.remove());
 
         graph.properties
