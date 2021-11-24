@@ -148,11 +148,6 @@ const update = (graph: Graph) => {
     state.node.append("circle").attr("r", (d: Node) => d.radius);
 
     state.node
-        .append("circle")
-        .attr("r", (d: Node) => d.radius * 1.1)
-        .classed("ring", true);
-
-    state.node
         .append("text")
         .attr("dx", 12)
         .attr("dy", 20)
@@ -167,11 +162,6 @@ const update = (graph: Graph) => {
     });
 
     state.prop.append("circle").attr("r", (d: Node) => d.radius);
-
-    state.prop
-        .append("circle")
-        .attr("r", (d: Node) => d.radius * 1.1)
-        .classed("ring", true);
 
     state.prop
         .append("text")
@@ -195,11 +185,6 @@ const update = (graph: Graph) => {
         .selectAll<d3.BaseType, Node>("text")
         .attr("fill", (n: Node) => `rgba(0, 0, 0, ${getAlpha(n)})`);
 
-    state.node
-        .selectAll<d3.BaseType, Node>(".ring")
-        .attr("fill", "none")
-        .attr("stroke", (n: Node) => `rgba(${getColor(n)}, ${n.userEnabled ? 1.0 : 0.0})`);
-
     state.prop.attr("display", (n: Node) => (n.visible ? "" : "none"));
 
     state.prop.selectAll<d3.BaseType, Node>("circle").attr("fill", (n: Node) => getColor(n));
@@ -207,11 +192,6 @@ const update = (graph: Graph) => {
     state.prop
         .selectAll<d3.BaseType, Node>("text")
         .attr("fill", (n: Node) => `rgba(0, 0, 0, ${getAlpha(n)})`);
-
-    state.prop
-        .selectAll<d3.BaseType, Node>(".ring")
-        .attr("fill", "none")
-        .attr("stroke", (n: Node) => `rgba(${getColor(n)}, ${n.userEnabled ? 1.0 : 0.0})`);
 
     state.link.attr("display", (l) => (isNode(l.source) ? (l.source.enabled ? "" : "none") : ""));
     state.link.attr("stroke-width", 2);
