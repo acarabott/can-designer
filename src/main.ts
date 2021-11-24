@@ -1,5 +1,5 @@
 import * as d3 from "d3";
-import { Graph, GraphDef, isNode, Link, Node, NodeDef, State } from "./api";
+import { DatumSelection, Graph, GraphDef, isNode, Link, Node, NodeDef, State } from "./api";
 import { getById } from "./getById";
 
 const svg = d3.select("#content").append("svg");
@@ -105,97 +105,7 @@ const createState = (graph: Graph) => {
     return { node, prop, link };
 };
 
-const update = (graph: Graph) => {
-    graph.links = [];
-    const allNodes = [...graph.types, ...graph.properties];
-    for (const datum of allNodes) {
-        if (datum.enabled) {
-            datum.properties.forEach((prop) => {
-                const target = allNodes.find((n: Node) => n.id === prop);
-                if (target !== undefined) {
-                    graph.links.push({
-                        source: datum,
-                        target,
-                    });
-                }
-            });
-        }
-    }
-
-    const state = createState(graph);
-
-    const refresh = () => {
-        clearState(state);
-        update(graph);
-    };
-
-    simulation
-        .nodes([...graph.types, ...graph.properties].filter((n: Node) => n.visible))
-        .on("tick", () => {
-            state.node.attr("transform", (d: Node) => `translate(${d.x}, ${d.y})`);
-
-            state.prop.attr("transform", (d: Node) => `translate(${d.x}, ${d.y})`);
-
-            state.link
-                .attr("x1", (l: Link) => (isNode(l.source) ? l.source.x ?? 0 : 0))
-                .attr("y1", (l: Link) => (isNode(l.source) ? l.source.y ?? 0 : 0))
-                .attr("x2", (l: Link) => (isNode(l.target) ? l.target.x ?? 0 : 0))
-                .attr("y2", (l: Link) => (isNode(l.target) ? l.target.y ?? 0 : 0));
-        });
-
-    simulation.force("link", d3.forceLink(graph.links));
-
-    state.node.append("circle").attr("r", (d: Node) => d.radius);
-
-    state.node
-        .append("text")
-        .attr("dx", 12)
-        .attr("dy", 20)
-        .text((d: Node) => d.id.replace(/_/g, " "));
-
-    state.node.on("click", (d: Node) => {
-        if (d.disabled) {
-            return;
-        }
-        d.toggle();
-        refresh();
-    });
-
-    state.prop.append("circle").attr("r", (d: Node) => d.radius);
-
-    state.prop
-        .append("text")
-        .attr("dx", 12)
-        .attr("dy", 20)
-        .text((d: Node) => d.id.replace(/_/g, " "));
-
-    state.prop.on("click", (d: Node) => {
-        if (d.disabled) {
-            return;
-        }
-        d.toggle();
-        refresh();
-    });
-
-    state.node.attr("display", (n: Node) => (n.visible ? "" : "none"));
-
-    state.node.selectAll<d3.BaseType, Node>("circle").attr("fill", (n: Node) => getColor(n));
-
-    state.node
-        .selectAll<d3.BaseType, Node>("text")
-        .attr("fill", (n: Node) => `rgba(0, 0, 0, ${getAlpha(n)})`);
-
-    state.prop.attr("display", (n: Node) => (n.visible ? "" : "none"));
-
-    state.prop.selectAll<d3.BaseType, Node>("circle").attr("fill", (n: Node) => getColor(n));
-
-    state.prop
-        .selectAll<d3.BaseType, Node>("text")
-        .attr("fill", (n: Node) => `rgba(0, 0, 0, ${getAlpha(n)})`);
-
-    state.link.attr("display", (l) => (isNode(l.source) ? (l.source.enabled ? "" : "none") : ""));
-    state.link.attr("stroke-width", 2);
-
+const updateLists = (graph: Graph) => {
     const list = getById("list");
     const requirements = getById("requirements");
     const suggestions = getById("suggestions");
@@ -224,6 +134,76 @@ const update = (graph: Graph) => {
             list.appendChild(defLi(datum));
         }
     }
+};
+
+const update = (graph: Graph) => {
+    graph.links = [];
+    const allNodes = [...graph.types, ...graph.properties];
+    for (const datum of allNodes) {
+        if (datum.enabled) {
+            datum.properties.forEach((prop) => {
+                const target = allNodes.find((n: Node) => n.id === prop);
+                if (target !== undefined) {
+                    graph.links.push({
+                        source: datum,
+                        target,
+                    });
+                }
+            });
+        }
+    }
+
+    const state = createState(graph);
+
+    simulation
+        .nodes([...graph.types, ...graph.properties].filter((n: Node) => n.visible))
+        .on("tick", () => {
+            state.node.attr("transform", (d: Node) => `translate(${d.x}, ${d.y})`);
+
+            state.prop.attr("transform", (d: Node) => `translate(${d.x}, ${d.y})`);
+
+            state.link
+                .attr("x1", (l: Link) => (isNode(l.source) ? l.source.x ?? 0 : 0))
+                .attr("y1", (l: Link) => (isNode(l.source) ? l.source.y ?? 0 : 0))
+                .attr("x2", (l: Link) => (isNode(l.target) ? l.target.x ?? 0 : 0))
+                .attr("y2", (l: Link) => (isNode(l.target) ? l.target.y ?? 0 : 0));
+        });
+
+    simulation.force("link", d3.forceLink(graph.links));
+
+    const setupDatums = (selection: DatumSelection) => {
+        selection.append("circle").attr("r", (d: Node) => d.radius);
+
+        selection
+            .append("text")
+            .attr("dx", 12)
+            .attr("dy", 20)
+            .text((d: Node) => d.id.replace(/_/g, " "));
+
+        selection.on("click", (d: Node) => {
+            if (d.disabled) {
+                return;
+            }
+            d.toggle();
+            clearState(state);
+            update(graph);
+        });
+
+        selection.attr("display", (n: Node) => (n.visible ? "" : "none"));
+        selection.selectAll<d3.BaseType, Node>("circle").attr("fill", (n: Node) => getColor(n));
+
+        selection
+            .selectAll<d3.BaseType, Node>("text")
+            .attr("fill", (n: Node) => `rgba(0, 0, 0, ${getAlpha(n)})`);
+    };
+
+    setupDatums(state.node);
+    setupDatums(state.prop);
+
+    state.link.attr("display", (l) => (isNode(l.source) ? (l.source.enabled ? "" : "none") : ""));
+    state.link.attr("stroke-width", 2);
+
+    updateLists(graph);
 };
 
 const createNode = (graph: Graph, def: NodeDef): Node => {
