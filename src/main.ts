@@ -184,7 +184,29 @@ const main = (graph: Graph) => {
         });
     });
 
-    const createState = (graph: Graph): State => {
+    const restart = (state?: State) => {
+        if (state !== undefined) {
+            state.node.remove();
+            state.prop.remove();
+            state.link.remove();
+        }
+
+        graph.links = [];
+        const allNodes = [...graph.types, ...graph.properties];
+        for (const datum of allNodes) {
+            if (datum.enabled) {
+                datum.properties.forEach((prop) => {
+                    const target = allNodes.find((n: Node) => n.id === prop);
+                    if (target !== undefined) {
+                        graph.links.push({
+                            source: datum,
+                            target,
+                        });
+                    }
+                });
+            }
+        }
+
         const node = svg
             .append("g")
             .attr("class", "nodes")
@@ -211,33 +233,7 @@ const main = (graph: Graph) => {
             .enter()
             .append("line");
 
-        return { node, prop, link };
-    };
-
-    const restart = (state?: State) => {
-        if (state !== undefined) {
-            state.node.remove();
-            state.prop.remove();
-            state.link.remove();
-        }
-
-        graph.links = [];
-        const allNodes = [...graph.types, ...graph.properties];
-        for (const datum of allNodes) {
-            if (datum.enabled) {
-                datum.properties.forEach((prop) => {
-                    const target = allNodes.find((n: Node) => n.id === prop);
-                    if (target !== undefined) {
-                        graph.links.push({
-                            source: datum,
-                            target,
-                        });
-                    }
-                });
-            }
-        }
-
-        const newState = createState(graph);
+        const newState: State = { node, prop, link };
 
         simulation
             .nodes([...graph.types, ...graph.properties].filter((n: Node) => n.visible))
