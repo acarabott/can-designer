@@ -1,61 +1,25 @@
 import * as d3 from "d3";
-import { DatumSelection, Graph, GraphDef, isNode, Link, Node, NodeDef, State } from "./api";
+import {
+    DatumSelection,
+    Graph,
+    GraphDef,
+    isNode,
+    Link,
+    Node,
+    NodeDef,
+    Simulation,
+    State,
+    SVG,
+} from "./api";
 import { getById } from "./getById";
 
-const svg = d3.select("#content").append("svg");
-const simulation = d3
-    .forceSimulation<Node, Link>()
-    .force(
-        "link",
-        d3
-            .forceLink<Node, Link>()
-            .id((d: Node) => d.id)
-            .distance((_d) => 150),
-    )
-    .force("charge", d3.forceManyBody().strength(-10))
-    .force(
-        "collide",
-        d3.forceCollide<Node>().radius((d: Node) => d.radius),
-    );
-
-const updateSize = () => {
+const getContentSize = () => {
     const content = getById("content");
     const width = content.clientWidth;
     const height = content.clientHeight;
 
-    svg.attr("width", width);
-    svg.attr("height", height);
-
-    simulation.force("center", d3.forceCenter(width / 2, height / 2));
+    return { width, height };
 };
-
-window.addEventListener("resize", updateSize, { passive: true });
-
-const getEvent = (d3: unknown) => <d3.D3DragEvent<SVGGElement, Node, SVGGElement>>(d3 as any).event;
-const dragHandler = d3
-    .drag<SVGGElement, Node, SVGGElement>()
-    .on("start", (d: Node) => {
-        const event = getEvent(d3);
-
-        if (!event.active) {
-            simulation.alphaTarget(0.3).restart();
-        }
-        d.fx = d.x;
-        d.fy = d.y;
-    })
-    .on("drag", (d: Node) => {
-        const event = getEvent(d3);
-        d.fx = event.x;
-        d.fy = event.y;
-    })
-    .on("end", (d: Node) => {
-        const event = getEvent(d3);
-        if (!event.active) {
-            simulation.alphaTarget(0);
-        }
-        d.fx = null;
-        d.fy = null;
-    });
 
 const clearState = (state: State) => {
     state.node.remove();
@@ -63,7 +27,35 @@ const clearState = (state: State) => {
     state.link.remove();
 };
 
-const createState = (graph: Graph) => {
+const createState = (graph: Graph, simulation: Simulation, svg: SVG) => {
+    const getEvent = (d3: unknown) =>
+        <d3.D3DragEvent<SVGGElement, Node, SVGGElement>>(d3 as any).event;
+
+    const dragHandler = d3
+        .drag<SVGGElement, Node, SVGGElement>()
+        .on("start", (d: Node) => {
+            const event = getEvent(d3);
+
+            if (!event.active) {
+                simulation.alphaTarget(0.3).restart();
+            }
+            d.fx = d.x;
+            d.fy = d.y;
+        })
+        .on("drag", (d: Node) => {
+            const event = getEvent(d3);
+            d.fx = event.x;
+            d.fy = event.y;
+        })
+        .on("end", (d: Node) => {
+            const event = getEvent(d3);
+            if (!event.active) {
+                simulation.alphaTarget(0);
+            }
+            d.fx = null;
+            d.fy = null;
+        });
+
     const node = svg
         .append("g")
         .attr("class", "nodes")
@@ -124,7 +116,7 @@ const updateLists = (graph: Graph) => {
     }
 };
 
-const update = (graph: Graph) => {
+const update = (graph: Graph, simulation: Simulation, svg: SVG) => {
     graph.links = [];
     const allNodes = [...graph.types, ...graph.properties];
     for (const datum of allNodes) {
@@ -141,7 +133,7 @@ const update = (graph: Graph) => {
         }
     }
 
-    const state = createState(graph);
+    const state = createState(graph, simulation, svg);
 
     simulation
         .nodes([...graph.types, ...graph.properties].filter((n: Node) => n.visible))
@@ -174,7 +166,7 @@ const update = (graph: Graph) => {
             }
             d.toggle();
             clearState(state);
-            update(graph);
+            update(graph, simulation, svg);
         });
 
         const getAlpha = (n: Node) => (n.enabled ? 1.0 : n.disabled ? 0.1 : 0.5);
@@ -205,7 +197,7 @@ const update = (graph: Graph) => {
     updateLists(graph);
 };
 
-const createNode = (graph: Graph, def: NodeDef): Node => {
+const createNode = (graph: Graph, def: NodeDef, startPos: { x: number; y: number }): Node => {
     return {
         ...def,
         userEnabled: false,
@@ -218,8 +210,7 @@ const createNode = (graph: Graph, def: NodeDef): Node => {
         toggle() {
             this.userEnabled = !this.userEnabled;
         },
-        x: parseInt(svg.attr("width")) / 2,
-        y: parseInt(svg.attr("height")) / 2,
+        ...startPos,
         get visible() {
             if (["1", "2"].includes(def.type)) {
                 return true;
@@ -266,16 +257,52 @@ const createNode = (graph: Graph, def: NodeDef): Node => {
 };
 
 const main = (graphDef: GraphDef) => {
+    const { width, height } = getContentSize();
+    const startPos = { x: width * 0.5, y: height * 0.5 };
+    
+    const simulation = d3
+        .forceSimulation<Node, Link>()
+        .force(
+            "link",
+            d3
+                .forceLink<Node, Link>()
+                .id((d: Node) => d.id)
+                .distance((_d) => 150),
+        )
+        .force("charge", d3.forceManyBody().strength(-10))
+        .force(
+            "collide",
+            d3.forceCollide<Node>().radius((d: Node) => d.radius),
+        );
+
+    const svg: SVG = d3.select("#content").append("svg");
+
+    const updateSize = (width: number, height: number) => {
+        svg.attr("width", width);
+        svg.attr("height", height);
+        simulation.force("center", d3.forceCenter(width / 2, height / 2));
+    };
+
     const graph: Graph = {
         types: [],
         properties: [],
         links: [],
     };
 
-    graph.types = graphDef.types.map((def) => createNode(graph, def));
-    graph.properties = graphDef.properties.map((def) => createNode(graph, def));
+    graph.types = graphDef.types.map((def) => createNode(graph, def, startPos));
+    graph.properties = graphDef.properties.map((def) => createNode(graph, def, startPos));
 
-    update(graph);
+    window.addEventListener(
+        "resize",
+        () => {
+            const { width, height } = getContentSize();
+            updateSize(width, height);
+        },
+        { passive: true },
+    );
+
+    updateSize(width, height);
+    update(graph, simulation, svg);
 };
 
 d3.json("data/numbers.json", (error, graphDef: GraphDef) => {
@@ -283,6 +310,5 @@ d3.json("data/numbers.json", (error, graphDef: GraphDef) => {
         throw error;
     }
 
-    updateSize();
     main(graphDef);
 });

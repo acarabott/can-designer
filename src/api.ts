@@ -35,6 +35,9 @@ export interface Graph {
 export type DatumSelection = d3.Selection<SVGGElement, Node, SVGGElement, unknown>;
 export type LinkSelection = d3.Selection<SVGLineElement, Link, SVGGElement, unknown>;
 
+export type SVG = d3.Selection<SVGSVGElement, unknown, HTMLElement, any>;
+export type Simulation = d3.Simulation<Node, Link>;
+
 export interface State {
     node: DatumSelection;
     prop: DatumSelection;
