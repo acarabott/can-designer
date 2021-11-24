@@ -171,7 +171,10 @@ const main = (graph: Graph) => {
 
         node.selectAll<d3.BaseType, Node>("circle").attr("fill", (n: Node) => getColor(n));
 
-        node.selectAll<d3.BaseType, Node>("text").attr("fill", (n: Node) => `rgba(0, 0, 0, ${getAlpha(n)})`);
+        node.selectAll<d3.BaseType, Node>("text").attr(
+            "fill",
+            (n: Node) => `rgba(0, 0, 0, ${getAlpha(n)})`,
+        );
 
         node.selectAll<d3.BaseType, Node>(".ring")
             .attr("fill", "none")
@@ -181,7 +184,10 @@ const main = (graph: Graph) => {
 
         prop.selectAll<d3.BaseType, Node>("circle").attr("fill", (n: Node) => getColor(n));
 
-        prop.selectAll<d3.BaseType, Node>("text").attr("fill", (n: Node) => `rgba(0, 0, 0, ${getAlpha(n)})`);
+        prop.selectAll<d3.BaseType, Node>("text").attr(
+            "fill",
+            (n: Node) => `rgba(0, 0, 0, ${getAlpha(n)})`,
+        );
 
         prop.selectAll<d3.BaseType, Node>(".ring")
             .attr("fill", "none")
@@ -256,9 +262,17 @@ const main = (graph: Graph) => {
                 });
             }
         }
-        link = svg.append("g").attr("class", "links").selectAll("line").data(graph.links).enter().append("line");
+        link = svg
+            .append("g")
+            .attr("class", "links")
+            .selectAll("line")
+            .data(graph.links)
+            .enter()
+            .append("line");
 
-        simulation.nodes([...graph.types, ...graph.properties].filter((n: Node) => n.visible)).on("tick", ticked);
+        simulation
+            .nodes([...graph.types, ...graph.properties].filter((n: Node) => n.visible))
+            .on("tick", ticked);
 
         simulation.force("link", d3.forceLink(graph.links));
 
