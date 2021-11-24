@@ -1,4 +1,5 @@
 import * as d3 from "d3";
+import { getById } from "./getById";
 
 interface Node extends d3.SimulationNodeDatum {
     id: string;
@@ -26,7 +27,7 @@ interface Graph {
     links: Link[];
 }
 
-const svg = d3.select("body").append("svg");
+const svg = d3.select("#content").append("svg");
 const simulation = d3
     .forceSimulation<Node, Link>()
     .force(
@@ -43,8 +44,9 @@ const simulation = d3
     );
 
 const updateSize = () => {
-    const width = window.innerWidth;
-    const height = window.innerHeight;
+    const content = getById("content");
+    const width = content.clientWidth;
+    const height = content.clientHeight;
 
     svg.attr("width", width);
     svg.attr("height", height);

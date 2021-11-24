@@ -47,6 +47,11 @@ h1 {
     font: 10px Lato sans-serif;
 }
 
+#content {
+    width: 80vw;
+    height: 100vh;
+}
+
 #list-wrap {
     position: fixed;
     right: 0;
