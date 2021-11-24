@@ -90,45 +90,14 @@ interface State {
     link: d3.Selection<SVGLineElement, Link, SVGGElement, unknown>;
 }
 
-const render = (state: State) => {
-    const getAlpha = (n: Node) => (n.enabled ? 1.0 : n.disabled ? 0.1 : 0.5);
-    const getColor = (n: Node) => {
-        return {
-            "1": `rgba(43, 156, 212, ${getAlpha(n)})`,
-            "2": `rgba(43, 212, 156, ${getAlpha(n)})`,
-            property: `rgba(249, 182, 118, ${getAlpha(n)})`,
-            requirement: `rgba(212, 100, 100, ${getAlpha(n)})`,
-        }[n.type];
-    };
-
-    state.node.attr("display", (n: Node) => (n.visible ? "" : "none"));
-
-    state.node.selectAll<d3.BaseType, Node>("circle").attr("fill", (n: Node) => getColor(n));
-
-    state.node
-        .selectAll<d3.BaseType, Node>("text")
-        .attr("fill", (n: Node) => `rgba(0, 0, 0, ${getAlpha(n)})`);
-
-    state.node
-        .selectAll<d3.BaseType, Node>(".ring")
-        .attr("fill", "none")
-        .attr("stroke", (n: Node) => `rgba(${getColor(n)}, ${n.userEnabled ? 1.0 : 0.0})`);
-
-    state.prop.attr("display", (n: Node) => (n.visible ? "" : "none"));
-
-    state.prop.selectAll<d3.BaseType, Node>("circle").attr("fill", (n: Node) => getColor(n));
-
-    state.prop
-        .selectAll<d3.BaseType, Node>("text")
-        .attr("fill", (n: Node) => `rgba(0, 0, 0, ${getAlpha(n)})`);
-
-    state.prop
-        .selectAll<d3.BaseType, Node>(".ring")
-        .attr("fill", "none")
-        .attr("stroke", (n: Node) => `rgba(${getColor(n)}, ${n.userEnabled ? 1.0 : 0.0})`);
-
-    state.link.attr("display", (l) => (isNode(l.source) ? (l.source.enabled ? "" : "none") : ""));
-    state.link.attr("stroke-width", 2);
+const getAlpha = (n: Node) => (n.enabled ? 1.0 : n.disabled ? 0.1 : 0.5);
+const getColor = (n: Node) => {
+    return {
+        "1": `rgba(43, 156, 212, ${getAlpha(n)})`,
+        "2": `rgba(43, 212, 156, ${getAlpha(n)})`,
+        property: `rgba(249, 182, 118, ${getAlpha(n)})`,
+        requirement: `rgba(212, 100, 100, ${getAlpha(n)})`,
+    }[n.type];
 };
 
 const ticked = (state: State) => {
@@ -318,7 +287,36 @@ const main = (graph: Graph) => {
             restart(newState);
         });
 
-        render(newState);
+        newState.node.attr("display", (n: Node) => (n.visible ? "" : "none"));
+
+        newState.node.selectAll<d3.BaseType, Node>("circle").attr("fill", (n: Node) => getColor(n));
+
+        newState.node
+            .selectAll<d3.BaseType, Node>("text")
+            .attr("fill", (n: Node) => `rgba(0, 0, 0, ${getAlpha(n)})`);
+
+        newState.node
+            .selectAll<d3.BaseType, Node>(".ring")
+            .attr("fill", "none")
+            .attr("stroke", (n: Node) => `rgba(${getColor(n)}, ${n.userEnabled ? 1.0 : 0.0})`);
+
+        newState.prop.attr("display", (n: Node) => (n.visible ? "" : "none"));
+
+        newState.prop.selectAll<d3.BaseType, Node>("circle").attr("fill", (n: Node) => getColor(n));
+
+        newState.prop
+            .selectAll<d3.BaseType, Node>("text")
+            .attr("fill", (n: Node) => `rgba(0, 0, 0, ${getAlpha(n)})`);
+
+        newState.prop
+            .selectAll<d3.BaseType, Node>(".ring")
+            .attr("fill", "none")
+            .attr("stroke", (n: Node) => `rgba(${getColor(n)}, ${n.userEnabled ? 1.0 : 0.0})`);
+
+        newState.link.attr("display", (l) =>
+            isNode(l.source) ? (l.source.enabled ? "" : "none") : "",
+        );
+        newState.link.attr("stroke-width", 2);
 
         const list = getById("list");
         const requirements = getById("requirements");
