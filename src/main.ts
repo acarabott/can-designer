@@ -1,13 +1,16 @@
 import * as d3 from "d3";
 import { getById } from "./getById";
 
-interface Node extends d3.SimulationNodeDatum {
+interface NodeDef {
     id: string;
     type: "1" | "2" | "property" | "requirement";
     enabledBy: Array<string[]>;
     disabledBy: Array<string[]>;
     properties: string[];
-    userEnabled?: boolean;
+}
+
+interface Node extends NodeDef, d3.SimulationNodeDatum {
+    userEnabled: boolean;
     enable: () => void;
     disable: () => void;
     toggle: () => void;
@@ -20,6 +23,11 @@ interface Node extends d3.SimulationNodeDatum {
 type Link = d3.SimulationLinkDatum<Node>;
 
 const isNode = (node: unknown): node is Node => typeof node === "object";
+
+interface GraphDef {
+    types: NodeDef[];
+    properties: NodeDef[];
+}
 
 interface Graph {
     types: Node[];
@@ -272,82 +280,82 @@ const update = (graph: Graph, state?: State) => {
     }
 };
 
-const main = (graph: Graph) => {
-    graph.links = [];
+const createNode = (graph: Graph, def: NodeDef): Node => {
+    return {
+        ...def,
+        userEnabled: false,
+        enable() {
+            this.userEnabled = true;
+        },
+        disable() {
+            this.userEnabled = false;
+        },
+        toggle() {
+            this.userEnabled = !this.userEnabled;
+        },
+        x: parseInt(svg.attr("width")) / 2,
+        y: parseInt(svg.attr("height")) / 2,
+        get visible() {
+            if (["1", "2"].includes(def.type)) {
+                return true;
+            }
 
-    // set up objects
-    [graph.types, graph.properties].forEach((set) => {
-        set.forEach((n: Node) => {
-            n.userEnabled = false;
-
-            n.enable = () => (n.userEnabled = true);
-            n.disable = () => (n.userEnabled = false);
-            n.toggle = () => (n.userEnabled ? n.disable() : n.enable());
-
-            n.x = parseInt(svg.attr("width")) / 2;
-            n.y = parseInt(svg.attr("height")) / 2;
-
-            Object.defineProperties(n, {
-                visible: {
-                    get: () => {
-                        if (["1", "2"].includes(n.type)) {
-                            return true;
-                        }
-
-                        return [...graph.types, ...graph.properties]
-                            .filter((node) => node.properties.includes(n.id))
-                            .some((node) => node.enabled);
-                    },
-                },
-                enabled: {
-                    get: () => {
-                        const enabledByOther = n.enabledBy.some((ids) => {
-                            return [...graph.types, ...graph.properties]
-                                .filter((node) => ids.includes(node.id))
-                                .every((node) => node.enabled);
-                        });
-                        let requirementEnabled = false;
-                        if (n.type === "requirement") {
-                            const parent = [...graph.types, ...graph.properties].find((node) => {
-                                return node.properties.includes(n.id);
-                            });
-                            requirementEnabled = parent !== undefined && parent.enabled;
-                        }
-
-                        return n.userEnabled || enabledByOther || requirementEnabled;
-                    },
-                },
-                disabled: {
-                    get: () => {
-                        return n.disabledBy.some((ids) => {
-                            return [...graph.types, ...graph.properties]
-                                .filter((node) => ids.includes(node.id))
-                                .every((node) => node.enabled);
-                        });
-                    },
-                },
-                radius: {
-                    get: () => {
-                        const radii = {
-                            1: 50,
-                            2: 40,
-                            property: 20,
-                            requirement: 30,
-                        } as const;
-
-                        return radii[n.type];
-                    },
-                },
+            return [...graph.types, ...graph.properties]
+                .filter((node) => node.properties.includes(def.id))
+                .some((node) => node.enabled);
+        },
+        get enabled() {
+            const enabledByOther = def.enabledBy.some((ids) => {
+                return [...graph.types, ...graph.properties]
+                    .filter((node) => ids.includes(node.id))
+                    .every((node) => node.enabled);
             });
-        });
-    });
+            let requirementEnabled = false;
+            if (def.type === "requirement") {
+                const parent = [...graph.types, ...graph.properties].find((node) => {
+                    return node.properties.includes(def.id);
+                });
+                requirementEnabled = parent !== undefined && parent.enabled;
+            }
+
+            return this.userEnabled || enabledByOther || requirementEnabled;
+        },
+        get disabled() {
+            return def.disabledBy.some((ids) => {
+                return [...graph.types, ...graph.properties]
+                    .filter((node) => ids.includes(node.id))
+                    .every((node) => node.enabled);
+            });
+        },
+        get radius() {
+            const radii = {
+                1: 50,
+                2: 40,
+                property: 20,
+                requirement: 30,
+            } as const;
+
+            return radii[def.type];
+        },
+    };
+};
+
+const main = (graphDef: GraphDef) => {
+    const graph: Graph = {
+        types: [],
+        properties: [],
+        links: [],
+    };
+
+    graph.types = graphDef.types.map((def) => createNode(graph, def));
+    graph.properties = graphDef.properties.map((def) => createNode(graph, def));
 
     update(graph);
 };
 
-d3.json("data/numbers.json", (error, graph: Graph) => {
+d3.json("data/numbers.json", (error, graphDef: GraphDef) => {
     if (error) {
         throw error;
     }
-    main(graph);
+    main(graphDef);
 });
