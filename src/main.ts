@@ -1,39 +1,6 @@
 import * as d3 from "d3";
+import { Graph, GraphDef, isNode, Link, Node, NodeDef, State } from "./api";
 import { getById } from "./getById";
-
-interface NodeDef {
-    id: string;
-    type: "1" | "2" | "property" | "requirement";
-    enabledBy: Array<string[]>;
-    disabledBy: Array<string[]>;
-    properties: string[];
-}
-
-interface Node extends NodeDef, d3.SimulationNodeDatum {
-    userEnabled: boolean;
-    enable: () => void;
-    disable: () => void;
-    toggle: () => void;
-    enabled: boolean;
-    disabled: boolean;
-    visible: boolean;
-    radius: number;
-}
-
-type Link = d3.SimulationLinkDatum<Node>;
-
-const isNode = (node: unknown): node is Node => typeof node === "object";
-
-interface GraphDef {
-    types: NodeDef[];
-    properties: NodeDef[];
-}
-
-interface Graph {
-    types: Node[];
-    properties: Node[];
-    links: Link[];
-}
 
 const svg = d3.select("#content").append("svg");
 const simulation = d3
@@ -92,12 +59,6 @@ const dragHandler = d3
         d.fy = null;
     });
 
-interface State {
-    node: d3.Selection<SVGGElement, Node, SVGGElement, unknown>;
-    prop: d3.Selection<SVGGElement, Node, SVGGElement, unknown>;
-    link: d3.Selection<SVGLineElement, Link, SVGGElement, unknown>;
-}
-
 const getAlpha = (n: Node) => (n.enabled ? 1.0 : n.disabled ? 0.1 : 0.5);
 const getColor = (n: Node) => {
     return {
@@ -108,25 +69,11 @@ const getColor = (n: Node) => {
     }[n.type];
 };
 
-const ticked = (state: State) => {
-    state.node.attr("transform", (d: Node) => `translate(${d.x}, ${d.y})`);
-
-    state.prop.attr("transform", (d: Node) => {
-        return `translate(${d.x}, ${d.y})`;
-    });
-
-    state.link
-        .attr("x1", (l: Link) => (isNode(l.source) ? l.source.x ?? 0 : 0))
-        .attr("y1", (l: Link) => (isNode(l.source) ? l.source.y ?? 0 : 0))
-        .attr("x2", (l: Link) => (isNode(l.target) ? l.target.x ?? 0 : 0))
-        .attr("y2", (l: Link) => (isNode(l.target) ? l.target.y ?? 0 : 0));
-};
-
-const update = (graph: Graph, state?: State) => {
-    if (state !== undefined) {
-        state.node.remove();
-        state.prop.remove();
-        state.link.remove();
+const update = (graph: Graph, oldState?: State) => {
+    if (oldState !== undefined) {
+        oldState.node.remove();
+        oldState.prop.remove();
+        oldState.link.remove();
     }
 
     graph.links = [];
@@ -175,7 +122,16 @@ const update = (graph: Graph, state?: State) => {
 
     simulation
         .nodes([...graph.types, ...graph.properties].filter((n: Node) => n.visible))
-        .on("tick", () => ticked(newState));
+        .on("tick", () => {
+            node.attr("transform", (d: Node) => `translate(${d.x}, ${d.y})`);
+
+            prop.attr("transform", (d: Node) => `translate(${d.x}, ${d.y})`);
+
+            link.attr("x1", (l: Link) => (isNode(l.source) ? l.source.x ?? 0 : 0))
+                .attr("y1", (l: Link) => (isNode(l.source) ? l.source.y ?? 0 : 0))
+                .attr("x2", (l: Link) => (isNode(l.target) ? l.target.x ?? 0 : 0))
+                .attr("y2", (l: Link) => (isNode(l.target) ? l.target.y ?? 0 : 0));
+        });
 
     simulation.force("link", d3.forceLink(graph.links));
 
