@@ -129,6 +129,20 @@ const render = (state: State) => {
     state.link.attr("stroke-width", 2);
 };
 
+const ticked = (state: State) => {
+    state.node.attr("transform", (d: Node) => `translate(${d.x}, ${d.y})`);
+
+    state.prop.attr("transform", (d: Node) => {
+        return `translate(${d.x}, ${d.y})`;
+    });
+
+    state.link
+        .attr("x1", (l: Link) => (isNode(l.source) ? l.source.x ?? 0 : 0))
+        .attr("y1", (l: Link) => (isNode(l.source) ? l.source.y ?? 0 : 0))
+        .attr("x2", (l: Link) => (isNode(l.target) ? l.target.x ?? 0 : 0))
+        .attr("y2", (l: Link) => (isNode(l.target) ? l.target.y ?? 0 : 0));
+};
+
 const main = (graph: Graph) => {
     graph.links = [];
 
@@ -199,31 +213,8 @@ const main = (graph: Graph) => {
         });
     });
 
-    const ticked = () => {
-        if (node === undefined || prop === undefined || link === undefined) {
-            return;
-        }
-
-        node.attr("transform", (d: Node) => `translate(${d.x}, ${d.y})`);
-        prop.attr("transform", (d: Node) => {
-            return `translate(${d.x}, ${d.y})`;
-        });
-
-        link.attr("x1", (l: Link) => (isNode(l.source) ? l.source.x ?? 0 : 0))
-            .attr("y1", (l: Link) => (isNode(l.source) ? l.source.y ?? 0 : 0))
-            .attr("x2", (l: Link) => (isNode(l.target) ? l.target.x ?? 0 : 0))
-            .attr("y2", (l: Link) => (isNode(l.target) ? l.target.y ?? 0 : 0));
-    };
-
-    let node: d3.Selection<SVGGElement, Node, SVGGElement, unknown> | undefined;
-    let prop: d3.Selection<SVGGElement, Node, SVGGElement, unknown> | undefined;
-    let link: d3.Selection<SVGLineElement, Link, SVGGElement, unknown>;
-    const restart = () => {
-        if (node !== undefined) {
-            node.remove();
-        }
-
-        node = svg
+    const createState = (graph: Graph): State => {
+        const node = svg
             .append("g")
             .attr("class", "nodes")
             .selectAll("circle")
@@ -232,11 +223,7 @@ const main = (graph: Graph) => {
             .append("g")
             .call(dragHandler);
 
-        if (prop !== undefined) {
-            prop.remove();
-        }
-
-        prop = svg
+        const prop = svg
             .append("g")
             .attr("class", "properties")
             .selectAll("circle")
@@ -245,8 +232,22 @@ const main = (graph: Graph) => {
             .append("g")
             .call(dragHandler);
 
-        if (link !== undefined) {
-            link.remove();
+        const link = svg
+            .append("g")
+            .attr("class", "links")
+            .selectAll("line")
+            .data(graph.links)
+            .enter()
+            .append("line");
+
+        return { node, prop, link };
+    };
+
+    const restart = (state?: State) => {
+        if (state !== undefined) {
+            state.node.remove();
+            state.prop.remove();
+            state.link.remove();
         }
 
         graph.links = [];
@@ -264,59 +265,58 @@ const main = (graph: Graph) => {
                 });
             }
         }
-        link = svg
-            .append("g")
-            .attr("class", "links")
-            .selectAll("line")
-            .data(graph.links)
-            .enter()
-            .append("line");
+
+        const newState = createState(graph);
 
         simulation
             .nodes([...graph.types, ...graph.properties].filter((n: Node) => n.visible))
-            .on("tick", ticked);
+            .on("tick", () => ticked(newState));
 
         simulation.force("link", d3.forceLink(graph.links));
 
-        node.append("circle").attr("r", (d: Node) => d.radius);
+        newState.node.append("circle").attr("r", (d: Node) => d.radius);
 
-        node.append("circle")
+        newState.node
+            .append("circle")
             .attr("r", (d: Node) => d.radius * 1.1)
             .classed("ring", true);
 
-        node.append("text")
+        newState.node
+            .append("text")
             .attr("dx", 12)
             .attr("dy", 20)
             .text((d: Node) => d.id.replace(/_/g, " "));
 
-        node.on("click", (d: Node) => {
+        newState.node.on("click", (d: Node) => {
             if (d.disabled) {
                 return;
             }
             d.toggle();
-            restart();
+            restart(newState);
         });
 
-        prop.append("circle").attr("r", (d: Node) => d.radius);
+        newState.prop.append("circle").attr("r", (d: Node) => d.radius);
 
-        prop.append("circle")
+        newState.prop
+            .append("circle")
             .attr("r", (d: Node) => d.radius * 1.1)
             .classed("ring", true);
 
-        prop.append("text")
+        newState.prop
+            .append("text")
             .attr("dx", 12)
             .attr("dy", 20)
             .text((d: Node) => d.id.replace(/_/g, " "));
 
-        prop.on("click", (d: Node) => {
+        newState.prop.on("click", (d: Node) => {
             if (d.disabled) {
                 return;
             }
             d.toggle();
-            restart();
+            restart(newState);
         });
 
-        render({ node, prop, link });
+        render(newState);
 
         const list = document.getElementById("list");
         if (list === null) {
