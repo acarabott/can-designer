@@ -207,25 +207,6 @@ const main = (graph: Graph) => {
             .attr("y2", (l: Link) => (isNode(l.target) ? l.target.y ?? 0 : 0));
     };
 
-    const createLinks = () => {
-        graph.links = [];
-        [graph.types, graph.properties].forEach((set) => {
-            set.forEach((n: Node) => {
-                if (n.enabled) {
-                    n.properties.forEach((prop) => {
-                        const target = [...graph.types, ...graph.properties].find((n: Node) => n.id === prop);
-                        if (target !== undefined) {
-                            graph.links.push({
-                                source: n,
-                                target,
-                            });
-                        }
-                    });
-                }
-            });
-        });
-    };
-
     let node: d3.Selection<SVGGElement, Node, SVGGElement, unknown> | undefined;
     let prop: d3.Selection<SVGGElement, Node, SVGGElement, unknown> | undefined;
     let link: d3.Selection<SVGLineElement, Link, SVGGElement, unknown>;
@@ -260,8 +241,21 @@ const main = (graph: Graph) => {
             link.remove();
         }
 
-        createLinks();
-
+        graph.links = [];
+        const allNodes = [...graph.types, ...graph.properties];
+        for (const datum of allNodes) {
+            if (datum.enabled) {
+                datum.properties.forEach((prop) => {
+                    const target = allNodes.find((n: Node) => n.id === prop);
+                    if (target !== undefined) {
+                        graph.links.push({
+                            source: datum,
+                            target,
+                        });
+                    }
+                });
+            }
+        }
         link = svg.append("g").attr("class", "links").selectAll("line").data(graph.links).enter().append("line");
 
         simulation.nodes([...graph.types, ...graph.properties].filter((n: Node) => n.visible)).on("tick", ticked);
