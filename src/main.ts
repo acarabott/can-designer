@@ -321,45 +321,31 @@ const main = (graph: Graph) => {
         render(newState);
 
         const list = getById("list");
-
-        Array.from(list.children).forEach((c) => c.remove());
-
-        graph.types
-            .filter((n: Node) => n.userEnabled || (n.enabled && n.type !== "requirement"))
-            .forEach((n: Node) => {
-                const li = document.createElement("li");
-                li.textContent = n.id.replace(/_/g, " ");
-                list.appendChild(li);
-            });
-
         const requirements = getById("requirements");
-        Array.from(requirements.children).forEach((c) => c.remove());
-        graph.properties
-            .filter((n: Node) => n.type === "requirement" && n.enabled && !n.userEnabled)
-            .forEach((n: Node) => {
-                const li = document.createElement("li");
-                li.textContent = n.id.replace(/_/g, " ");
-                requirements.appendChild(li);
-            });
-
         const suggestions = getById("suggestions");
-        Array.from(suggestions.children).forEach((c) => c.remove());
 
-        graph.properties
-            .filter((n: Node) => n.visible)
-            .forEach((n: Node) => {
-                const li = document.createElement("li");
-                li.textContent = n.id.replace(/_/g, " ");
-                suggestions.appendChild(li);
-            });
+        for (const ul of [list, requirements, suggestions]) {
+            for (const child of Array.from(ul.children)) {
+                child.remove();
+            }
+        }
 
-        graph.properties
-            .filter((n: Node) => n.enabled && !n.userEnabled)
-            .forEach((n: Node) => {
+        for (const datum of graph.types) {
+            if (datum.userEnabled || (datum.enabled && datum.type !== "requirement")) {
                 const li = document.createElement("li");
-                li.textContent = n.id.replace(/_/g, " ");
-                suggestions.appendChild(li);
-            });
+                li.textContent = datum.id.replace(/_/g, " ");
+                list.appendChild(li);
+            }
+        }
+
+        for (const datum of graph.properties) {
+            if (datum.visible || (datum.enabled && !datum.userEnabled)) {
+                const li = document.createElement("li");
+                li.textContent = datum.id.replace(/_/g, " ");
+                const list = datum.type === "requirement" ? requirements : suggestions;
+                list.appendChild(li);
+            }
+        }
     };
 
     restart();
