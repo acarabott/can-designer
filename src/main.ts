@@ -69,29 +69,13 @@ const getColor = (n: Node) => {
     }[n.type];
 };
 
-const update = (graph: Graph, oldState?: State) => {
-    if (oldState !== undefined) {
-        oldState.node.remove();
-        oldState.prop.remove();
-        oldState.link.remove();
-    }
+const clearState = (state: State) => {
+    state.node.remove();
+    state.prop.remove();
+    state.link.remove();
+};
 
-    graph.links = [];
-    const allNodes = [...graph.types, ...graph.properties];
-    for (const datum of allNodes) {
-        if (datum.enabled) {
-            datum.properties.forEach((prop) => {
-                const target = allNodes.find((n: Node) => n.id === prop);
-                if (target !== undefined) {
-                    graph.links.push({
-                        source: datum,
-                        target,
-                    });
-                }
-            });
-        }
-    }
-
+const createState = (graph: Graph) => {
     const node = svg
         .append("g")
         .attr("class", "nodes")
@@ -118,16 +102,42 @@ const update = (graph: Graph, oldState?: State) => {
         .enter()
         .append("line");
 
-    const newState: State = { node, prop, link };
+    return { node, prop, link };
+};
+
+const update = (graph: Graph) => {
+    graph.links = [];
+    const allNodes = [...graph.types, ...graph.properties];
+    for (const datum of allNodes) {
+        if (datum.enabled) {
+            datum.properties.forEach((prop) => {
+                const target = allNodes.find((n: Node) => n.id === prop);
+                if (target !== undefined) {
+                    graph.links.push({
+                        source: datum,
+                        target,
+                    });
+                }
+            });
+        }
+    }
+
+    const state = createState(graph);
+
+    const refresh = () => {
+        clearState(state);
+        update(graph);
+    };
 
     simulation
         .nodes([...graph.types, ...graph.properties].filter((n: Node) => n.visible))
         .on("tick", () => {
-            node.attr("transform", (d: Node) => `translate(${d.x}, ${d.y})`);
+            state.node.attr("transform", (d: Node) => `translate(${d.x}, ${d.y})`);
 
-            prop.attr("transform", (d: Node) => `translate(${d.x}, ${d.y})`);
+            state.prop.attr("transform", (d: Node) => `translate(${d.x}, ${d.y})`);
 
-            link.attr("x1", (l: Link) => (isNode(l.source) ? l.source.x ?? 0 : 0))
+            state.link
+                .attr("x1", (l: Link) => (isNode(l.source) ? l.source.x ?? 0 : 0))
                 .attr("y1", (l: Link) => (isNode(l.source) ? l.source.y ?? 0 : 0))
                 .attr("x2", (l: Link) => (isNode(l.target) ? l.target.x ?? 0 : 0))
                 .attr("y2", (l: Link) => (isNode(l.target) ? l.target.y ?? 0 : 0));
@@ -135,78 +145,76 @@ const update = (graph: Graph, oldState?: State) => {
 
     simulation.force("link", d3.forceLink(graph.links));
 
-    newState.node.append("circle").attr("r", (d: Node) => d.radius);
+    state.node.append("circle").attr("r", (d: Node) => d.radius);
 
-    newState.node
+    state.node
         .append("circle")
         .attr("r", (d: Node) => d.radius * 1.1)
         .classed("ring", true);
 
-    newState.node
+    state.node
         .append("text")
         .attr("dx", 12)
         .attr("dy", 20)
         .text((d: Node) => d.id.replace(/_/g, " "));
 
-    newState.node.on("click", (d: Node) => {
+    state.node.on("click", (d: Node) => {
         if (d.disabled) {
             return;
         }
         d.toggle();
-        update(graph, newState);
+        refresh();
     });
 
-    newState.prop.append("circle").attr("r", (d: Node) => d.radius);
+    state.prop.append("circle").attr("r", (d: Node) => d.radius);
 
-    newState.prop
+    state.prop
         .append("circle")
         .attr("r", (d: Node) => d.radius * 1.1)
         .classed("ring", true);
 
-    newState.prop
+    state.prop
         .append("text")
         .attr("dx", 12)
         .attr("dy", 20)
         .text((d: Node) => d.id.replace(/_/g, " "));
 
-    newState.prop.on("click", (d: Node) => {
+    state.prop.on("click", (d: Node) => {
         if (d.disabled) {
             return;
         }
         d.toggle();
-        update(graph, newState);
+        refresh();
     });
 
-    newState.node.attr("display", (n: Node) => (n.visible ? "" : "none"));
+    state.node.attr("display", (n: Node) => (n.visible ? "" : "none"));
 
-    newState.node.selectAll<d3.BaseType, Node>("circle").attr("fill", (n: Node) => getColor(n));
+    state.node.selectAll<d3.BaseType, Node>("circle").attr("fill", (n: Node) => getColor(n));
 
-    newState.node
+    state.node
         .selectAll<d3.BaseType, Node>("text")
         .attr("fill", (n: Node) => `rgba(0, 0, 0, ${getAlpha(n)})`);
 
-    newState.node
+    state.node
         .selectAll<d3.BaseType, Node>(".ring")
         .attr("fill", "none")
         .attr("stroke", (n: Node) => `rgba(${getColor(n)}, ${n.userEnabled ? 1.0 : 0.0})`);
 
-    newState.prop.attr("display", (n: Node) => (n.visible ? "" : "none"));
+    state.prop.attr("display", (n: Node) => (n.visible ? "" : "none"));
 
-    newState.prop.selectAll<d3.BaseType, Node>("circle").attr("fill", (n: Node) => getColor(n));
+    state.prop.selectAll<d3.BaseType, Node>("circle").attr("fill", (n: Node) => getColor(n));
 
-    newState.prop
+    state.prop
         .selectAll<d3.BaseType, Node>("text")
         .attr("fill", (n: Node) => `rgba(0, 0, 0, ${getAlpha(n)})`);
 
-    newState.prop
+    state.prop
         .selectAll<d3.BaseType, Node>(".ring")
         .attr("fill", "none")
         .attr("stroke", (n: Node) => `rgba(${getColor(n)}, ${n.userEnabled ? 1.0 : 0.0})`);
 
-    newState.link.attr("display", (l) =>
-        isNode(l.source) ? (l.source.enabled ? "" : "none") : "",
-    );
-    newState.link.attr("stroke-width", 2);
+    state.link.attr("display", (l) => (isNode(l.source) ? (l.source.enabled ? "" : "none") : ""));
+    state.link.attr("stroke-width", 2);
 
     const list = getById("list");
     const requirements = getById("requirements");
@@ -218,20 +226,22 @@ const update = (graph: Graph, oldState?: State) => {
         }
     }
 
+    const defLi = (datum: Node) => {
+        const li = document.createElement("li");
+        li.textContent = datum.id.replace(/_/g, " ");
+        return li;
+    };
+
     for (const datum of graph.types) {
         if (datum.userEnabled || (datum.enabled && datum.type !== "requirement")) {
-            const li = document.createElement("li");
-            li.textContent = datum.id.replace(/_/g, " ");
-            list.appendChild(li);
+            list.appendChild(defLi(datum));
         }
     }
 
     for (const datum of graph.properties) {
         if (datum.visible || (datum.enabled && !datum.userEnabled)) {
-            const li = document.createElement("li");
-            li.textContent = datum.id.replace(/_/g, " ");
             const list = datum.type === "requirement" ? requirements : suggestions;
-            list.appendChild(li);
+            list.appendChild(defLi(datum));
         }
     }
 };
