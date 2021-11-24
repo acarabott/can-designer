@@ -59,16 +59,6 @@ const dragHandler = d3
         d.fy = null;
     });
 
-const getAlpha = (n: Node) => (n.enabled ? 1.0 : n.disabled ? 0.1 : 0.5);
-const getColor = (n: Node) => {
-    return {
-        "1": `rgba(43, 156, 212, ${getAlpha(n)})`,
-        "2": `rgba(43, 212, 156, ${getAlpha(n)})`,
-        property: `rgba(249, 182, 118, ${getAlpha(n)})`,
-        requirement: `rgba(212, 100, 100, ${getAlpha(n)})`,
-    }[n.type];
-};
-
 const clearState = (state: State) => {
     state.node.remove();
     state.prop.remove();
@@ -189,8 +179,19 @@ const update = (graph: Graph) => {
             update(graph);
         });
 
+        const getAlpha = (n: Node) => (n.enabled ? 1.0 : n.disabled ? 0.1 : 0.5);
+
         selection.attr("display", (n: Node) => (n.visible ? "" : "none"));
-        selection.selectAll<d3.BaseType, Node>("circle").attr("fill", (n: Node) => getColor(n));
+        selection.selectAll<d3.BaseType, Node>("circle").attr(
+            "fill",
+            (n: Node) =>
+                ({
+                    "1": `rgba(43, 156, 212, ${getAlpha(n)})`,
+                    "2": `rgba(43, 212, 156, ${getAlpha(n)})`,
+                    property: `rgba(249, 182, 118, ${getAlpha(n)})`,
+                    requirement: `rgba(212, 100, 100, ${getAlpha(n)})`,
+                }[n.type]),
+        );
 
         selection
             .selectAll<d3.BaseType, Node>("text")
