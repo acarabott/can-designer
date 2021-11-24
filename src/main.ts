@@ -114,6 +114,164 @@ const ticked = (state: State) => {
         .attr("y2", (l: Link) => (isNode(l.target) ? l.target.y ?? 0 : 0));
 };
 
+const update = (graph: Graph, state?: State) => {
+    if (state !== undefined) {
+        state.node.remove();
+        state.prop.remove();
+        state.link.remove();
+    }
+
+    graph.links = [];
+    const allNodes = [...graph.types, ...graph.properties];
+    for (const datum of allNodes) {
+        if (datum.enabled) {
+            datum.properties.forEach((prop) => {
+                const target = allNodes.find((n: Node) => n.id === prop);
+                if (target !== undefined) {
+                    graph.links.push({
+                        source: datum,
+                        target,
+                    });
+                }
+            });
+        }
+    }
+
+    const node = svg
+        .append("g")
+        .attr("class", "nodes")
+        .selectAll("circle")
+        .data(graph.types)
+        .enter()
+        .append("g")
+        .call(dragHandler);
+
+    const prop = svg
+        .append("g")
+        .attr("class", "properties")
+        .selectAll("circle")
+        .data(graph.properties)
+        .enter()
+        .append("g")
+        .call(dragHandler);
+
+    const link = svg
+        .append("g")
+        .attr("class", "links")
+        .selectAll("line")
+        .data(graph.links)
+        .enter()
+        .append("line");
+
+    const newState: State = { node, prop, link };
+
+    simulation
+        .nodes([...graph.types, ...graph.properties].filter((n: Node) => n.visible))
+        .on("tick", () => ticked(newState));
+
+    simulation.force("link", d3.forceLink(graph.links));
+
+    newState.node.append("circle").attr("r", (d: Node) => d.radius);
+
+    newState.node
+        .append("circle")
+        .attr("r", (d: Node) => d.radius * 1.1)
+        .classed("ring", true);
+
+    newState.node
+        .append("text")
+        .attr("dx", 12)
+        .attr("dy", 20)
+        .text((d: Node) => d.id.replace(/_/g, " "));
+
+    newState.node.on("click", (d: Node) => {
+        if (d.disabled) {
+            return;
+        }
+        d.toggle();
+        update(graph, newState);
+    });
+
+    newState.prop.append("circle").attr("r", (d: Node) => d.radius);
+
+    newState.prop
+        .append("circle")
+        .attr("r", (d: Node) => d.radius * 1.1)
+        .classed("ring", true);
+
+    newState.prop
+        .append("text")
+        .attr("dx", 12)
+        .attr("dy", 20)
+        .text((d: Node) => d.id.replace(/_/g, " "));
+
+    newState.prop.on("click", (d: Node) => {
+        if (d.disabled) {
+            return;
+        }
+        d.toggle();
+        update(graph, newState);
+    });
+
+    newState.node.attr("display", (n: Node) => (n.visible ? "" : "none"));
+
+    newState.node.selectAll<d3.BaseType, Node>("circle").attr("fill", (n: Node) => getColor(n));
+
+    newState.node
+        .selectAll<d3.BaseType, Node>("text")
+        .attr("fill", (n: Node) => `rgba(0, 0, 0, ${getAlpha(n)})`);
+
+    newState.node
+        .selectAll<d3.BaseType, Node>(".ring")
+        .attr("fill", "none")
+        .attr("stroke", (n: Node) => `rgba(${getColor(n)}, ${n.userEnabled ? 1.0 : 0.0})`);
+
+    newState.prop.attr("display", (n: Node) => (n.visible ? "" : "none"));
+
+    newState.prop.selectAll<d3.BaseType, Node>("circle").attr("fill", (n: Node) => getColor(n));
+
+    newState.prop
+        .selectAll<d3.BaseType, Node>("text")
+        .attr("fill", (n: Node) => `rgba(0, 0, 0, ${getAlpha(n)})`);
+
+    newState.prop
+        .selectAll<d3.BaseType, Node>(".ring")
+        .attr("fill", "none")
+        .attr("stroke", (n: Node) => `rgba(${getColor(n)}, ${n.userEnabled ? 1.0 : 0.0})`);
+
+    newState.link.attr("display", (l) =>
+        isNode(l.source) ? (l.source.enabled ? "" : "none") : "",
+    );
+    newState.link.attr("stroke-width", 2);
+
+    const list = getById("list");
+    const requirements = getById("requirements");
+    const suggestions = getById("suggestions");
+
+    for (const ul of [list, requirements, suggestions]) {
+        for (const child of Array.from(ul.children)) {
+            child.remove();
+        }
+    }
+
+    for (const datum of graph.types) {
+        if (datum.userEnabled || (datum.enabled && datum.type !== "requirement")) {
+            const li = document.createElement("li");
+            li.textContent = datum.id.replace(/_/g, " ");
+            list.appendChild(li);
+        }
+    }
+
+    for (const datum of graph.properties) {
+        if (datum.visible || (datum.enabled && !datum.userEnabled)) {
+            const li = document.createElement("li");
+            li.textContent = datum.id.replace(/_/g, " ");
+            const list = datum.type === "requirement" ? requirements : suggestions;
+            list.appendChild(li);
+        }
+    }
+};
+
 const main = (graph: Graph) => {
     graph.links = [];
 
@@ -184,165 +342,7 @@ const main = (graph: Graph) => {
         });
     });
 
-    const restart = (state?: State) => {
-        if (state !== undefined) {
-            state.node.remove();
-            state.prop.remove();
-            state.link.remove();
-        }
-
-        graph.links = [];
-        const allNodes = [...graph.types, ...graph.properties];
-        for (const datum of allNodes) {
-            if (datum.enabled) {
-                datum.properties.forEach((prop) => {
-                    const target = allNodes.find((n: Node) => n.id === prop);
-                    if (target !== undefined) {
-                        graph.links.push({
-                            source: datum,
-                            target,
-                        });
-                    }
-                });
-            }
-        }
-
-        const node = svg
-            .append("g")
-            .attr("class", "nodes")
-            .selectAll("circle")
-            .data(graph.types)
-            .enter()
-            .append("g")
-            .call(dragHandler);
-
-        const prop = svg
-            .append("g")
-            .attr("class", "properties")
-            .selectAll("circle")
-            .data(graph.properties)
-            .enter()
-            .append("g")
-            .call(dragHandler);
-
-        const link = svg
-            .append("g")
-            .attr("class", "links")
-            .selectAll("line")
-            .data(graph.links)
-            .enter()
-            .append("line");
-
-        const newState: State = { node, prop, link };
-
-        simulation
-            .nodes([...graph.types, ...graph.properties].filter((n: Node) => n.visible))
-            .on("tick", () => ticked(newState));
-
-        simulation.force("link", d3.forceLink(graph.links));
-
-        newState.node.append("circle").attr("r", (d: Node) => d.radius);
-
-        newState.node
-            .append("circle")
-            .attr("r", (d: Node) => d.radius * 1.1)
-            .classed("ring", true);
-
-        newState.node
-            .append("text")
-            .attr("dx", 12)
-            .attr("dy", 20)
-            .text((d: Node) => d.id.replace(/_/g, " "));
-
-        newState.node.on("click", (d: Node) => {
-            if (d.disabled) {
-                return;
-            }
-            d.toggle();
-            restart(newState);
-        });
-
-        newState.prop.append("circle").attr("r", (d: Node) => d.radius);
-
-        newState.prop
-            .append("circle")
-            .attr("r", (d: Node) => d.radius * 1.1)
-            .classed("ring", true);
-
-        newState.prop
-            .append("text")
-            .attr("dx", 12)
-            .attr("dy", 20)
-            .text((d: Node) => d.id.replace(/_/g, " "));
-
-        newState.prop.on("click", (d: Node) => {
-            if (d.disabled) {
-                return;
-            }
-            d.toggle();
-            restart(newState);
-        });
-
-        newState.node.attr("display", (n: Node) => (n.visible ? "" : "none"));
-
-        newState.node.selectAll<d3.BaseType, Node>("circle").attr("fill", (n: Node) => getColor(n));
-
-        newState.node
-            .selectAll<d3.BaseType, Node>("text")
-            .attr("fill", (n: Node) => `rgba(0, 0, 0, ${getAlpha(n)})`);
-
-        newState.node
-            .selectAll<d3.BaseType, Node>(".ring")
-            .attr("fill", "none")
-            .attr("stroke", (n: Node) => `rgba(${getColor(n)}, ${n.userEnabled ? 1.0 : 0.0})`);
-
-        newState.prop.attr("display", (n: Node) => (n.visible ? "" : "none"));
-
-        newState.prop.selectAll<d3.BaseType, Node>("circle").attr("fill", (n: Node) => getColor(n));
-
-        newState.prop
-            .selectAll<d3.BaseType, Node>("text")
-            .attr("fill", (n: Node) => `rgba(0, 0, 0, ${getAlpha(n)})`);
-
-        newState.prop
-            .selectAll<d3.BaseType, Node>(".ring")
-            .attr("fill", "none")
-            .attr("stroke", (n: Node) => `rgba(${getColor(n)}, ${n.userEnabled ? 1.0 : 0.0})`);
-
-        newState.link.attr("display", (l) =>
-            isNode(l.source) ? (l.source.enabled ? "" : "none") : "",
-        );
-        newState.link.attr("stroke-width", 2);
-
-        const list = getById("list");
-        const requirements = getById("requirements");
-        const suggestions = getById("suggestions");
-
-        for (const ul of [list, requirements, suggestions]) {
-            for (const child of Array.from(ul.children)) {
-                child.remove();
-            }
-        }
-
-        for (const datum of graph.types) {
-            if (datum.userEnabled || (datum.enabled && datum.type !== "requirement")) {
-                const li = document.createElement("li");
-                li.textContent = datum.id.replace(/_/g, " ");
-                list.appendChild(li);
-            }
-        }
-
-        for (const datum of graph.properties) {
-            if (datum.visible || (datum.enabled && !datum.userEnabled)) {
-                const li = document.createElement("li");
-                li.textContent = datum.id.replace(/_/g, " ");
-                const list = datum.type === "requirement" ? requirements : suggestions;
-                list.appendChild(li);
-            }
-        }
-    };
-
-    restart();
+    update(graph);
 };
 
 d3.json("data/numbers.json", (error, graph: Graph) => {
