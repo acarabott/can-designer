@@ -82,6 +82,53 @@ const dragHandler = d3
         d.fy = null;
     });
 
+interface State {
+    node: d3.Selection<SVGGElement, Node, SVGGElement, unknown>;
+    prop: d3.Selection<SVGGElement, Node, SVGGElement, unknown>;
+    link: d3.Selection<SVGLineElement, Link, SVGGElement, unknown>;
+}
+
+const render = (state: State) => {
+    const getAlpha = (n: Node) => (n.enabled ? 1.0 : n.disabled ? 0.1 : 0.5);
+    const getColor = (n: Node) => {
+        return {
+            "1": `rgba(43, 156, 212, ${getAlpha(n)})`,
+            "2": `rgba(43, 212, 156, ${getAlpha(n)})`,
+            property: `rgba(249, 182, 118, ${getAlpha(n)})`,
+            requirement: `rgba(212, 100, 100, ${getAlpha(n)})`,
+        }[n.type];
+    };
+
+    state.node.attr("display", (n: Node) => (n.visible ? "" : "none"));
+
+    state.node.selectAll<d3.BaseType, Node>("circle").attr("fill", (n: Node) => getColor(n));
+
+    state.node
+        .selectAll<d3.BaseType, Node>("text")
+        .attr("fill", (n: Node) => `rgba(0, 0, 0, ${getAlpha(n)})`);
+
+    state.node
+        .selectAll<d3.BaseType, Node>(".ring")
+        .attr("fill", "none")
+        .attr("stroke", (n: Node) => `rgba(${getColor(n)}, ${n.userEnabled ? 1.0 : 0.0})`);
+
+    state.prop.attr("display", (n: Node) => (n.visible ? "" : "none"));
+
+    state.prop.selectAll<d3.BaseType, Node>("circle").attr("fill", (n: Node) => getColor(n));
+
+    state.prop
+        .selectAll<d3.BaseType, Node>("text")
+        .attr("fill", (n: Node) => `rgba(0, 0, 0, ${getAlpha(n)})`);
+
+    state.prop
+        .selectAll<d3.BaseType, Node>(".ring")
+        .attr("fill", "none")
+        .attr("stroke", (n: Node) => `rgba(${getColor(n)}, ${n.userEnabled ? 1.0 : 0.0})`);
+
+    state.link.attr("display", (l) => (isNode(l.source) ? (l.source.enabled ? "" : "none") : ""));
+    state.link.attr("stroke-width", 2);
+};
+
 const main = (graph: Graph) => {
     graph.links = [];
 
@@ -151,51 +198,6 @@ const main = (graph: Graph) => {
             });
         });
     });
-
-    const render = () => {
-        if (node === undefined || prop === undefined || link === undefined) {
-            return;
-        }
-
-        const getAlpha = (n: Node) => (n.enabled ? 1.0 : n.disabled ? 0.1 : 0.5);
-        const getColor = (n: Node) => {
-            return {
-                "1": `rgba(43, 156, 212, ${getAlpha(n)})`,
-                "2": `rgba(43, 212, 156, ${getAlpha(n)})`,
-                property: `rgba(249, 182, 118, ${getAlpha(n)})`,
-                requirement: `rgba(212, 100, 100, ${getAlpha(n)})`,
-            }[n.type];
-        };
-
-        node.attr("display", (n: Node) => (n.visible ? "" : "none"));
-
-        node.selectAll<d3.BaseType, Node>("circle").attr("fill", (n: Node) => getColor(n));
-
-        node.selectAll<d3.BaseType, Node>("text").attr(
-            "fill",
-            (n: Node) => `rgba(0, 0, 0, ${getAlpha(n)})`,
-        );
-
-        node.selectAll<d3.BaseType, Node>(".ring")
-            .attr("fill", "none")
-            .attr("stroke", (n: Node) => `rgba(${getColor(n)}, ${n.userEnabled ? 1.0 : 0.0})`);
-
-        prop.attr("display", (n: Node) => (n.visible ? "" : "none"));
-
-        prop.selectAll<d3.BaseType, Node>("circle").attr("fill", (n: Node) => getColor(n));
-
-        prop.selectAll<d3.BaseType, Node>("text").attr(
-            "fill",
-            (n: Node) => `rgba(0, 0, 0, ${getAlpha(n)})`,
-        );
-
-        prop.selectAll<d3.BaseType, Node>(".ring")
-            .attr("fill", "none")
-            .attr("stroke", (n: Node) => `rgba(${getColor(n)}, ${n.userEnabled ? 1.0 : 0.0})`);
-
-        link.attr("display", (l) => (isNode(l.source) ? (l.source.enabled ? "" : "none") : ""));
-        link.attr("stroke-width", 2);
-    };
 
     const ticked = () => {
         if (node === undefined || prop === undefined || link === undefined) {
@@ -314,7 +316,7 @@ const main = (graph: Graph) => {
             restart();
         });
 
-        render();
+        render({ node, prop, link });
 
         const list = document.getElementById("list");
         if (list === null) {
