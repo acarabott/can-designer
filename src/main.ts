@@ -31,8 +31,6 @@ const updateSize = () => {
 
 window.addEventListener("resize", updateSize, { passive: true });
 
-updateSize();
-
 const getEvent = (d3: unknown) => <d3.D3DragEvent<SVGGElement, Node, SVGGElement>>(d3 as any).event;
 const dragHandler = d3
     .drag<SVGGElement, Node, SVGGElement>()
@@ -284,5 +282,7 @@ d3.json("data/numbers.json", (error, graphDef: GraphDef) => {
     if (error) {
         throw error;
     }
+
+    updateSize();
     main(graphDef);
 });
