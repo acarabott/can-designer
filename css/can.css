@@ -1,63 +1,67 @@
 * {
-  -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-touch-callout: none; /* iOS Safari */
     -webkit-user-select: none; /* Safari */
-     -khtml-user-select: none; /* Konqueror HTML */
-       -moz-user-select: none; /* Firefox */
-        -ms-user-select: none; /* Internet Explorer/Edge */
-            user-select: none;  Non-prefixed version, currently
-                                  supported by Chrome and Opera
+    -khtml-user-select: none; /* Konqueror HTML */
+    -moz-user-select: none; /* Firefox */
+    -ms-user-select: none; /* Internet Explorer/Edge */
+    user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome and Opera */
 
-  margin: 0;
-  padding: 0;
+    margin: 0;
+    padding: 0;
 }
 
 body {
-  font-family: Lato, 'Helvetica Neue', Helvetica;
-  overflow-x: hidden;
-  overflow-y: auto;
+    font-family: Lato, "Helvetica Neue", Helvetica;
+    overflow-x: hidden;
+    overflow-y: auto;
 }
 
-h1, h2, h3, h4, h5, h6 {
-  font-weight: 200;
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-weight: 200;
 }
 
 :root {
-  --my-blue: rgb(43, 156, 212);
-  --my-red: rgb(212, 100, 100);
-  --my-orange: rgb(249, 182, 118);
-  --my-green: rgb(43, 212, 156);
+    --my-blue: rgb(43, 156, 212);
+    --my-red: rgb(212, 100, 100);
+    --my-orange: rgb(249, 182, 118);
+    --my-green: rgb(43, 212, 156);
 }
 
 h1 {
-  text-align: center;
-  margin-bottom: 20px;
+    text-align: center;
+    margin-bottom: 20px;
 }
 
 .links line {
-  stroke: #999;
-  stroke-opacity: 0.6;
+    stroke: #999;
+    stroke-opacity: 0.6;
 }
 .node text {
-  pointer-events: none;
-  font: 10px Lato sans-serif;
+    pointer-events: none;
+    font: 10px Lato sans-serif;
 }
 
 #list-wrap {
-  position: fixed;
-  right: 0;
-  top: 0;
-  height: 100vh;
-  width: 20vw;
-  border-left: 1px grey solid;
-  background: rgba(255, 255, 255, 0.7);
+    position: fixed;
+    right: 0;
+    top: 0;
+    height: 100vh;
+    width: 20vw;
+    border-left: 1px grey solid;
+    background: rgba(255, 255, 255, 0.7);
 }
 
 #list-content {
-  margin-top: 20vh;
-  padding: 10px;
+    margin-top: 20vh;
+    padding: 10px;
 }
 
 #list-wrap ul {
-  margin-left:20px;
-
+    margin-left: 20px;
 }
