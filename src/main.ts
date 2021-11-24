@@ -7,9 +7,7 @@ import {
     Link,
     Node,
     NodeDef,
-    Simulation,
-    State,
-    SVG,
+    Simulation, SVG
 } from "./api";
 import { getById } from "./getById";
 
@@ -19,12 +17,6 @@ const getContentSize = () => {
     const height = content.clientHeight;
 
     return { width, height };
-};
-
-const clearState = (state: State) => {
-    state.node.remove();
-    state.prop.remove();
-    state.link.remove();
 };
 
 const createState = (graph: Graph, simulation: Simulation, svg: SVG) => {
@@ -165,7 +157,11 @@ const update = (graph: Graph, simulation: Simulation, svg: SVG) => {
                 return;
             }
             d.toggle();
-            clearState(state);
+
+            state.node.remove();
+            state.prop.remove();
+            state.link.remove();
+
             update(graph, simulation, svg);
         });
 
@@ -259,7 +255,7 @@ const createNode = (graph: Graph, def: NodeDef, startPos: { x: number; y: number
 const main = (graphDef: GraphDef) => {
     const { width, height } = getContentSize();
     const startPos = { x: width * 0.5, y: height * 0.5 };
-    
+
     const simulation = d3
         .forceSimulation<Node, Link>()
         .force(
