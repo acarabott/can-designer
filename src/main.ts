@@ -194,6 +194,12 @@ const update = (graph: Graph, simulation: Simulation, svg: SVG) => {
     updateLists(graph);
 };
 
+const defCheckDependers = (graph: Graph) => (ids: Array<Node["id"]>) => {
+    return [...graph.types, ...graph.properties]
+        .filter((node) => ids.includes(node.id))
+        .every((node) => node.enabled);
+};
+
 const createNode = (graph: Graph, def: NodeDef, startPos: { x: number; y: number }): Node => {
     return {
         ...def,
@@ -218,27 +224,20 @@ const createNode = (graph: Graph, def: NodeDef, startPos: { x: number; y: number
                 .some((node) => node.enabled);
         },
         get enabled() {
-            const enabledByOther = def.enabledBy.some((ids) => {
-                return [...graph.types, ...graph.properties]
-                    .filter((node) => ids.includes(node.id))
-                    .every((node) => node.enabled);
-            });
-            let requirementEnabled = false;
-            if (def.type === "requirement") {
-                const parent = [...graph.types, ...graph.properties].find((node) => {
-                    return node.properties.includes(def.id);
-                });
-                requirementEnabled = parent !== undefined && parent.enabled;
-            }
+            const allNodes = [...graph.types, ...graph.properties];
+            const enabledByOther = def.enabledBy.some((ids) => defCheckDependers(graph)(ids));
+
+            const requirementEnabled =
+                (def.type === "requirement" &&
+                    allNodes.find((node) => {
+                        return node.properties.includes(def.id);
+                    })?.enabled) ??
+                false;
 
             return this.userEnabled || enabledByOther || requirementEnabled;
         },
         get disabled() {
-            return def.disabledBy.some((ids) => {
-                return [...graph.types, ...graph.properties]
-                    .filter((node) => ids.includes(node.id))
-                    .every((node) => node.enabled);
-            });
+            return def.disabledBy.some(defCheckDependers(graph));
         },
         get radius() {
             const radii = {
