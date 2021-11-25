@@ -7,7 +7,8 @@ import {
     Link,
     Node,
     NodeDef,
-    Simulation, SVG
+    Simulation,
+    SVG,
 } from "./api";
 import { getById } from "./getById";
 
@@ -259,17 +260,10 @@ const main = (graphDef: GraphDef) => {
     const simulation = d3
         .forceSimulation<Node, Link>()
         .force(
-            "link",
-            d3
-                .forceLink<Node, Link>()
-                .id((d: Node) => d.id)
-                .distance((_d) => 150),
-        )
-        .force("charge", d3.forceManyBody().strength(-10))
-        .force(
             "collide",
             d3.forceCollide<Node>().radius((d: Node) => d.radius),
-        );
+        )
+        .force("charge", d3.forceManyBody().strength(-10));
 
     const svg: SVG = d3.select("#content").append("svg");
 
@@ -277,6 +271,13 @@ const main = (graphDef: GraphDef) => {
         svg.attr("width", width);
         svg.attr("height", height);
         simulation.force("center", d3.forceCenter(width / 2, height / 2));
+        simulation.force(
+            "link",
+            d3
+                .forceLink<Node, Link>()
+                .id((d: Node) => d.id)
+                .distance((_d) => Math.min(width, height) * 0.1),
+        );
     };
 
     const graph: Graph = {
