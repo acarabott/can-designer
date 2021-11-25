@@ -1,28 +1,15 @@
-export interface NodeDef {
+export interface Node extends d3.SimulationNodeDatum {
     id: string;
     type: "1" | "2" | "property" | "requirement";
     enabledBy: Array<string[]>;
     disabledBy: Array<string[]>;
     properties: string[];
-}
-
-export interface Node extends NodeDef, d3.SimulationNodeDatum {
     userEnabled: boolean;
-    enable: () => void;
-    disable: () => void;
-    toggle: () => void;
-    disabled: boolean;
-    radius: number;
 }
 
 export type Link = d3.SimulationLinkDatum<Node>;
 
 export const isNode = (node: unknown): node is Node => typeof node === "object";
-
-export interface GraphDef {
-    types: NodeDef[];
-    properties: NodeDef[];
-}
 
 export interface Graph {
     types: Node[];

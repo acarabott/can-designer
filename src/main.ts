@@ -1,26 +1,11 @@
 import * as d3 from "d3";
-import {
-    DatumSelection,
-    Graph,
-    GraphDef,
-    isNode,
-    Link,
-    Node,
-    NodeDef,
-    Simulation,
-    SVG,
-} from "./api";
-import { getById } from "./getById";
+import { DatumSelection, Graph, isNode, Link, Node, Simulation, SVG } from "./api";
+import { isEnabled, isVisible, getRadius, isDisabled } from "./datumGetters";
+import { getContentSize } from "./getContentSize";
+import { defGraph } from "./model";
+import { updateLists } from "./updateLists";
 
-const getContentSize = () => {
-    const content = getById("content");
-    const width = content.clientWidth;
-    const height = content.clientHeight;
-
-    return { width, height };
-};
-
-const createState = (graph: Graph, simulation: Simulation, svg: SVG) => {
+const createState = (graph: Readonly<Graph>, simulation: Readonly<Simulation>, svg: Readonly<SVG>) => {
     const getEvent = (d3: unknown) =>
         <d3.D3DragEvent<SVGGElement, Node, SVGGElement>>(d3 as any).event;
 
@@ -76,37 +61,6 @@ const createState = (graph: Graph, simulation: Simulation, svg: SVG) => {
         .append("line");
 
     return { node, prop, link };
-};
-
-const updateLists = (graph: Graph) => {
-    const list = getById("list");
-    const requirements = getById("requirements");
-    const suggestions = getById("suggestions");
-
-    for (const ul of [list, requirements, suggestions]) {
-        for (const child of Array.from(ul.children)) {
-            child.remove();
-        }
-    }
-
-    const defLi = (datum: Node) => {
-        const li = document.createElement("li");
-        li.textContent = datum.id.replace(/_/g, " ");
-        return li;
-    };
-
-    for (const datum of graph.types) {
-        if (datum.userEnabled || (isEnabled(graph, datum) && datum.type !== "requirement")) {
-            list.appendChild(defLi(datum));
-        }
-    }
-
-    for (const datum of graph.properties) {
-        if (isVisible(graph, datum) || (isEnabled(graph, datum) && !datum.userEnabled)) {
-            const list = datum.type === "requirement" ? requirements : suggestions;
-            list.appendChild(defLi(datum));
-        }
-    }
 };
 
 const createLinks = (graph: Readonly<Graph>) => {
@@ -167,7 +121,7 @@ const update = (graph: Graph, simulation: Simulation, svg: SVG) => {
     simulation.force("link", d3.forceLink(graph.links));
 
     const setupDatums = (selection: DatumSelection) => {
-        selection.append("circle").attr("r", (d: Node) => d.radius);
+        selection.append("circle").attr("r", (d: Node) => getRadius(d));
 
         selection
             .append("text")
@@ -176,10 +130,11 @@ const update = (graph: Graph, simulation: Simulation, svg: SVG) => {
             .text((d: Node) => d.id.replace(/_/g, " "));
 
         selection.on("click", (d: Node) => {
-            if (d.disabled) {
+            if (isDisabled(graph, d)) {
                 return;
             }
-            d.toggle();
+
+            d.userEnabled = !d.userEnabled;
 
             state.node.remove();
             state.prop.remove();
@@ -188,7 +143,8 @@ const update = (graph: Graph, simulation: Simulation, svg: SVG) => {
             update(graph, simulation, svg);
         });
 
-        const getAlpha = (n: Node) => (isEnabled(graph, n) ? 1.0 : n.disabled ? 0.1 : 0.5);
+        const getAlpha = (n: Node) =>
+            isEnabled(graph, n) ? 1.0 : isDisabled(graph, n) ? 0.1 : 0.5;
 
         selection.attr("display", (n: Node) => (isVisible(graph, n) ? "" : "none"));
         selection.selectAll<d3.BaseType, Node>("circle").attr(
@@ -218,127 +174,48 @@ const update = (graph: Graph, simulation: Simulation, svg: SVG) => {
     updateLists(graph);
 };
 
-const defCheckDependers = (graph: Readonly<Graph>) => (ids: Array<Node["id"]>) => {
-    return [...graph.types, ...graph.properties]
-        .filter((node) => ids.includes(node.id))
-        .every((node) => isEnabled(graph, node));
+const updateSize = (svg: SVG, simulation: Simulation, width: number, height: number) => {
+    svg.attr("width", width);
+    svg.attr("height", height);
+    simulation.force("center", d3.forceCenter(width / 2, height / 2));
+    simulation.force(
+        "link",
+        d3
+            .forceLink<Node, Link>()
+            .id((d: Node) => d.id)
+            .distance((_d) => Math.min(width, height) * 0.1),
+    );
 };
 
-const isVisible = (graph: Readonly<Graph>, datum: Node) => {
-    if (["1", "2"].includes(datum.type)) {
-        return true;
-    }
-
-    return [...graph.types, ...graph.properties]
-        .filter((node) => node.properties.includes(datum.id))
-        .some((node) => isEnabled(graph, node));
-};
-
-const isEnabled = (graph: Readonly<Graph>, datum: Node) => {
-    if (datum.userEnabled) {
-        return true;
-    }
-
-    if (datum.enabledBy.some((ids) => defCheckDependers(graph)(ids))) {
-        return true;
-    }
-
-    if (datum.type === "requirement") {
-        const found = [...graph.types, ...graph.properties].find((fdatum) =>
-            fdatum.properties.includes(datum.id),
-        );
-
-        if (found !== undefined && isEnabled(graph, found)) {
-            return true;
-        }
-    }
-
-    return false;
-};
-
-const createNode = (graph: Graph, def: NodeDef, startPos: { x: number; y: number }): Node => {
-    return {
-        ...def,
-        userEnabled: false,
-        enable() {
-            this.userEnabled = true;
-        },
-        disable() {
-            this.userEnabled = false;
-        },
-        toggle() {
-            this.userEnabled = !this.userEnabled;
-        },
-        ...startPos,
-        get disabled() {
-            return def.disabledBy.some(defCheckDependers(graph));
-        },
-        get radius() {
-            const radii = {
-                1: 50,
-                2: 40,
-                property: 20,
-                requirement: 30,
-            } as const;
-
-            return radii[def.type];
-        },
-    };
-};
-
-const main = (graphDef: Readonly<GraphDef>) => {
-    const { width, height } = getContentSize();
-    const startPos = { x: width * 0.5, y: height * 0.5 };
-
+const main = () => {
     const simulation = d3
         .forceSimulation<Node, Link>()
         .force(
             "collide",
-            d3.forceCollide<Node>().radius((d: Node) => d.radius),
+            d3.forceCollide<Node>().radius((d: Node) => getRadius(d)),
         )
         .force("charge", d3.forceManyBody().strength(-10));
 
     const svg: SVG = d3.select("#content").append("svg");
 
-    const updateSize = (width: number, height: number) => {
-        svg.attr("width", width);
-        svg.attr("height", height);
-        simulation.force("center", d3.forceCenter(width / 2, height / 2));
-        simulation.force(
-            "link",
-            d3
-                .forceLink<Node, Link>()
-                .id((d: Node) => d.id)
-                .distance((_d) => Math.min(width, height) * 0.1),
-        );
-    };
-
-    const graph: Graph = {
-        types: [],
-        properties: [],
-        links: [],
-    };
-
-    graph.types = graphDef.types.map((def) => createNode(graph, def, startPos));
-    graph.properties = graphDef.properties.map((def) => createNode(graph, def, startPos));
+    const { width, height } = getContentSize();
+    const graph = defGraph();
+    for (const node of [...graph.types, ...graph.properties]) {
+        node.x = width * 0.5;
+        node.y = height * 0.5;
+    }
 
     window.addEventListener(
         "resize",
         () => {
             const { width, height } = getContentSize();
-            updateSize(width, height);
+            updateSize(svg, simulation, width, height);
         },
         { passive: true },
     );
 
-    updateSize(width, height);
+    updateSize(svg, simulation, width, height);
     update(graph, simulation, svg);
 };
 
-d3.json("data/numbers.json", (error, graphDef: GraphDef) => {
-    if (error) {
-        throw error;
-    }
-
-    main(graphDef);
-});
+main();
