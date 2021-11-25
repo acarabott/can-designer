@@ -11,9 +11,7 @@ export interface Node extends NodeDef, d3.SimulationNodeDatum {
     enable: () => void;
     disable: () => void;
     toggle: () => void;
-    enabled: boolean;
     disabled: boolean;
-    visible: boolean;
     radius: number;
 }
 

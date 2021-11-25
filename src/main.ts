@@ -96,24 +96,46 @@ const updateLists = (graph: Graph) => {
     };
 
     for (const datum of graph.types) {
-        if (datum.userEnabled || (datum.enabled && datum.type !== "requirement")) {
+        if (datum.userEnabled || (isEnabled(graph, datum) && datum.type !== "requirement")) {
             list.appendChild(defLi(datum));
         }
     }
 
     for (const datum of graph.properties) {
-        if (datum.visible || (datum.enabled && !datum.userEnabled)) {
+        if (isVisible(graph, datum) || (isEnabled(graph, datum) && !datum.userEnabled)) {
             const list = datum.type === "requirement" ? requirements : suggestions;
             list.appendChild(defLi(datum));
         }
     }
 };
 
-const update = (graph: Graph, simulation: Simulation, svg: SVG) => {
-    graph.links = [];
+const createLinks = (graph: Readonly<Graph>) => {
+    const links: Link[] = [];
     const allNodes = [...graph.types, ...graph.properties];
+
     for (const datum of allNodes) {
-        if (datum.enabled) {
+        if (isEnabled(graph, datum)) {
+            datum.properties.forEach((prop) => {
+                const target = allNodes.find((n: Node) => n.id === prop);
+                if (target !== undefined) {
+                    links.push({
+                        source: datum,
+                        target,
+                    });
+                }
+            });
+        }
+    }
+
+    return links;
+};
+
+const update = (graph: Graph, simulation: Simulation, svg: SVG) => {
+    graph.links = createLinks(graph);
+    const allNodes = [...graph.types, ...graph.properties];
+
+    for (const datum of allNodes) {
+        if (isEnabled(graph, datum)) {
             datum.properties.forEach((prop) => {
                 const target = allNodes.find((n: Node) => n.id === prop);
                 if (target !== undefined) {
@@ -129,7 +151,7 @@ const update = (graph: Graph, simulation: Simulation, svg: SVG) => {
     const state = createState(graph, simulation, svg);
 
     simulation
-        .nodes([...graph.types, ...graph.properties].filter((n: Node) => n.visible))
+        .nodes([...graph.types, ...graph.properties].filter((n: Node) => isVisible(graph, n)))
         .on("tick", () => {
             state.node.attr("transform", (d: Node) => `translate(${d.x}, ${d.y})`);
 
@@ -166,9 +188,9 @@ const update = (graph: Graph, simulation: Simulation, svg: SVG) => {
             update(graph, simulation, svg);
         });
 
-        const getAlpha = (n: Node) => (n.enabled ? 1.0 : n.disabled ? 0.1 : 0.5);
+        const getAlpha = (n: Node) => (isEnabled(graph, n) ? 1.0 : n.disabled ? 0.1 : 0.5);
 
-        selection.attr("display", (n: Node) => (n.visible ? "" : "none"));
+        selection.attr("display", (n: Node) => (isVisible(graph, n) ? "" : "none"));
         selection.selectAll<d3.BaseType, Node>("circle").attr(
             "fill",
             (n: Node) =>
@@ -188,16 +210,50 @@ const update = (graph: Graph, simulation: Simulation, svg: SVG) => {
     setupDatums(state.node);
     setupDatums(state.prop);
 
-    state.link.attr("display", (l) => (isNode(l.source) ? (l.source.enabled ? "" : "none") : ""));
+    state.link.attr("display", (l) =>
+        isNode(l.source) ? (isEnabled(graph, l.source) ? "" : "none") : "",
+    );
     state.link.attr("stroke-width", 2);
 
     updateLists(graph);
 };
 
-const defCheckDependers = (graph: Graph) => (ids: Array<Node["id"]>) => {
+const defCheckDependers = (graph: Readonly<Graph>) => (ids: Array<Node["id"]>) => {
     return [...graph.types, ...graph.properties]
         .filter((node) => ids.includes(node.id))
-        .every((node) => node.enabled);
+        .every((node) => isEnabled(graph, node));
+};
+
+const isVisible = (graph: Readonly<Graph>, datum: Node) => {
+    if (["1", "2"].includes(datum.type)) {
+        return true;
+    }
+
+    return [...graph.types, ...graph.properties]
+        .filter((node) => node.properties.includes(datum.id))
+        .some((node) => isEnabled(graph, node));
+};
+
+const isEnabled = (graph: Readonly<Graph>, datum: Node) => {
+    if (datum.userEnabled) {
+        return true;
+    }
+
+    if (datum.enabledBy.some((ids) => defCheckDependers(graph)(ids))) {
+        return true;
+    }
+
+    if (datum.type === "requirement") {
+        const found = [...graph.types, ...graph.properties].find((fdatum) =>
+            fdatum.properties.includes(datum.id),
+        );
+
+        if (found !== undefined && isEnabled(graph, found)) {
+            return true;
+        }
+    }
+
+    return false;
 };
 
 const createNode = (graph: Graph, def: NodeDef, startPos: { x: number; y: number }): Node => {
@@ -214,28 +270,6 @@ const createNode = (graph: Graph, def: NodeDef, startPos: { x: number; y: number
             this.userEnabled = !this.userEnabled;
         },
         ...startPos,
-        get visible() {
-            if (["1", "2"].includes(def.type)) {
-                return true;
-            }
-
-            return [...graph.types, ...graph.properties]
-                .filter((node) => node.properties.includes(def.id))
-                .some((node) => node.enabled);
-        },
-        get enabled() {
-            const allNodes = [...graph.types, ...graph.properties];
-            const enabledByOther = def.enabledBy.some((ids) => defCheckDependers(graph)(ids));
-
-            const requirementEnabled =
-                (def.type === "requirement" &&
-                    allNodes.find((node) => {
-                        return node.properties.includes(def.id);
-                    })?.enabled) ??
-                false;
-
-            return this.userEnabled || enabledByOther || requirementEnabled;
-        },
         get disabled() {
             return def.disabledBy.some(defCheckDependers(graph));
         },
@@ -252,7 +286,7 @@ const createNode = (graph: Graph, def: NodeDef, startPos: { x: number; y: number
     };
 };
 
-const main = (graphDef: GraphDef) => {
+const main = (graphDef: Readonly<GraphDef>) => {
     const { width, height } = getContentSize();
     const startPos = { x: width * 0.5, y: height * 0.5 };
 
