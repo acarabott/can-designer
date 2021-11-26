@@ -1,7 +1,8 @@
 import { Node, Graph } from "./api";
+import { getAllNodes } from "./getAllNodes";
 
 export const defCheckDependers = (graph: Readonly<Graph>) => (ids: Array<Node["id"]>) => {
-    return [...graph.types, ...graph.properties]
+    return getAllNodes(graph)
         .filter((node) => ids.includes(node.id))
         .every((node) => isEnabled(graph, node));
 };
@@ -11,7 +12,7 @@ export const isVisible = (graph: Readonly<Graph>, datum: Readonly<Node>) => {
         return true;
     }
 
-    return [...graph.types, ...graph.properties]
+    return getAllNodes(graph)
         .filter((node) => node.properties.includes(datum.id))
         .some((node) => isEnabled(graph, node));
 };
@@ -26,9 +27,7 @@ export const isEnabled = (graph: Readonly<Graph>, node: Readonly<Node>) => {
     }
 
     if (node.type === "requirement") {
-        const found = [...graph.types, ...graph.properties].find((f_node) =>
-            f_node.properties.includes(node.id),
-        );
+        const found = getAllNodes(graph).find((f_node) => f_node.properties.includes(node.id));
 
         if (found !== undefined && isEnabled(graph, found)) {
             return true;

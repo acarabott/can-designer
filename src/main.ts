@@ -8,13 +8,12 @@ import { getById } from "./getById";
 import { getContentShape } from "./getContentShape";
 import { defGraph } from "./model";
 import { updateSize } from "./updateSize";
+import { getAllNodes } from "./getAllNodes";
 
 const update = (ctx: Context) => {
     // update nodes
     ctx.model.simulation.nodes(
-        [...ctx.model.graph.types, ...ctx.model.graph.properties].filter((node: Node) =>
-            isVisible(ctx.model.graph, node),
-        ),
+        getAllNodes(ctx.model.graph).filter((node: Node) => isVisible(ctx.model.graph, node)),
     );
 
     // update svgs
@@ -66,7 +65,7 @@ const update = (ctx: Context) => {
         return li;
     };
 
-    for (const node of [...ctx.model.graph.types, ...ctx.model.graph.properties]) {
+    for (const node of getAllNodes(ctx.model.graph)) {
         if (node.userEnabled || (isEnabled(ctx.model.graph, node) && node.type !== "requirement")) {
             choices.appendChild(defLi(node));
         }
