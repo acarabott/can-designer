@@ -50,11 +50,11 @@ const update = (ctx: Context) => {
     ctx.views.links.attr("stroke-width", 2);
 
     // update lists
-    const list = getById("list");
+    const choices = getById("choices");
     const requirements = getById("requirements");
     const suggestions = getById("suggestions");
 
-    for (const ul of [list, requirements, suggestions]) {
+    for (const ul of [choices, requirements, suggestions]) {
         for (const child of Array.from(ul.children)) {
             child.remove();
         }
@@ -66,9 +66,9 @@ const update = (ctx: Context) => {
         return li;
     };
 
-    for (const node of ctx.model.graph.types) {
+    for (const node of [...ctx.model.graph.types, ...ctx.model.graph.properties]) {
         if (node.userEnabled || (isEnabled(ctx.model.graph, node) && node.type !== "requirement")) {
-            list.appendChild(defLi(node));
+            choices.appendChild(defLi(node));
         }
     }
 
