@@ -1,21 +1,21 @@
-import { Graph, Link, Datum } from "./api";
-import { isEnabled } from "./datumGetters";
+import { Graph, Link, Node } from "./api";
+import { isEnabled } from "./nodeGetters";
 
 export const createLinks = (graph: Readonly<Graph>) => {
     const links: Link[] = [];
     const allNodes = [...graph.types, ...graph.properties];
 
-    for (const datum of allNodes) {
-        if (isEnabled(graph, datum)) {
-            datum.properties.forEach((prop) => {
-                const target = allNodes.find((n: Datum) => n.id === prop);
+    for (const node of allNodes) {
+        if (isEnabled(graph, node)) {
+            for (const prop of node.properties) {
+                const target = allNodes.find((f_node: Node) => f_node.id === prop);
                 if (target !== undefined) {
                     links.push({
-                        source: datum,
+                        source: node,
                         target,
                     });
                 }
-            });
+            }
         }
     }
 

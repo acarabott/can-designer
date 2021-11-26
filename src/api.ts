@@ -5,7 +5,7 @@ export interface Shape {
     height: number;
 }
 
-export interface Datum extends d3.SimulationNodeDatum {
+export interface Node extends d3.SimulationNodeDatum {
     id: DatumID;
     type: DatumType;
     enabledBy: Array<Array<DatumID>>;
@@ -14,19 +14,19 @@ export interface Datum extends d3.SimulationNodeDatum {
     userEnabled: boolean;
 }
 
-export type Link = d3.SimulationLinkDatum<Datum>;
+export type Link = d3.SimulationLinkDatum<Node>;
 
-export const isNode = (node: unknown): node is Datum => typeof node === "object";
+export const isNode = (node: unknown): node is Node => typeof node === "object";
 
-export type DatumSVGs = d3.Selection<SVGGElement, Datum, SVGGElement, unknown>;
+export type NodeSVGs = d3.Selection<SVGGElement, Node, SVGGElement, unknown>;
 export type LinkSVGs = d3.Selection<SVGLineElement, Link, SVGGElement, unknown>;
 
 export type RootSVG = d3.Selection<SVGSVGElement, unknown, HTMLElement, any>;
-export type Simulation = d3.Simulation<Datum, Link>;
+export type Simulation = d3.Simulation<Node, Link>;
 
 export interface Graph {
-    types: Datum[];
-    properties: Datum[];
+    types: Node[];
+    properties: Node[];
     links: Link[];
 }
 
@@ -39,8 +39,8 @@ export interface Context {
     model: Model;
     views: {
         root: RootSVG;
-        types: DatumSVGs;
-        properties: DatumSVGs;
+        types: NodeSVGs;
+        properties: NodeSVGs;
         links: LinkSVGs;
     };
 }

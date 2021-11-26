@@ -1,5 +1,5 @@
 import * as d3 from "d3";
-import { Context, Datum, Link, Shape } from "./api";
+import { Context, Node, Link, Shape } from "./api";
 
 export const updateSize = (ctx: Context, shape: Shape) => {
     ctx.views.root.attr("width", shape.width);
@@ -8,8 +8,8 @@ export const updateSize = (ctx: Context, shape: Shape) => {
     ctx.model.simulation.force(
         "link",
         d3
-            .forceLink<Datum, Link>()
-            .id((d: Datum) => d.id)
+            .forceLink<Node, Link>()
+            .id((d: Node) => d.id)
             .distance((_d) => Math.min(shape.width, shape.height) * 0.1),
     );
 };
