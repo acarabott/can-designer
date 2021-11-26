@@ -1,8 +1,10 @@
-import * as d3 from "d3";
-import { Node, Model, RootSVG } from "./api";
+import * as d3drag from "d3-drag";
+import { D3DragEvent, drag } from "d3-drag";
+import { Model, Node, RootSVG } from "./api";
 import { getRadius, isDisabled } from "./nodeGetters";
 
-const getEvent = () => <d3.D3DragEvent<SVGGElement, Node, SVGGElement>>(d3 as any).event;
+
+const getEvent = () => <D3DragEvent<SVGGElement, Node, SVGGElement>>(d3drag as any).event;
 
 export const defNodeSVGs = (
     rootSVG: RootSVG,
@@ -10,6 +12,27 @@ export const defNodeSVGs = (
     data: Node[],
     update: () => void,
 ) => {
+    const dragHandler = drag<SVGGElement, Node, Node>()
+        .on("start", (node) => {
+            if (!getEvent().active) {
+                model.simulation.alphaTarget(0.3).restart();
+            }
+            node.fx = node.x;
+            node.fy = node.y;
+        })
+        .on("drag", (node: Node) => {
+            const event = getEvent();
+            node.fx = event.x;
+            node.fy = event.y;
+        })
+        .on("end", (node: Node) => {
+            if (!getEvent().active) {
+                model.simulation.alphaTarget(0);
+            }
+            node.fx = null;
+            node.fy = null;
+        });
+
     const nodeSVGs = rootSVG
         .append("g")
         .attr("class", "nodes")
@@ -17,29 +40,7 @@ export const defNodeSVGs = (
         .data(data)
         .enter()
         .append("g")
-        .call(
-            d3
-                .drag<SVGGElement, Node, SVGGElement>()
-                .on("start", (node: Node) => {
-                    if (!getEvent().active) {
-                        model.simulation.alphaTarget(0.3).restart();
-                    }
-                    node.fx = node.x;
-                    node.fy = node.y;
-                })
-                .on("drag", (node: Node) => {
-                    const event = getEvent();
-                    node.fx = event.x;
-                    node.fy = event.y;
-                })
-                .on("end", (node: Node) => {
-                    if (!getEvent().active) {
-                        model.simulation.alphaTarget(0);
-                    }
-                    node.fx = null;
-                    node.fy = null;
-                }),
-        );
+        .call(dragHandler);
 
     nodeSVGs.append("circle").attr("r", (node: Node) => getRadius(node));
     nodeSVGs

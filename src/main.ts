@@ -1,14 +1,15 @@
-import * as d3 from "d3";
-import { Context, NodeSVGs, isNode, Link, Node, RootSVG, Model } from "./api";
+import { forceCollide, forceLink, forceManyBody, forceSimulation } from "d3-force";
+import { BaseType, select } from "d3-selection";
+import { Context, isNode, Link, Model, Node, NodeSVGs, RootSVG } from "./api";
 import { createLinks } from "./createLinks";
-import { getRadius, isDisabled, isEnabled, isVisible } from "./nodeGetters";
-import { defNodeSVGs } from "./defNodeSVGs";
 import { defLinkSVGs } from "./defLinkSVGs";
+import { defNodeSVGs } from "./defNodeSVGs";
+import { getAllNodes } from "./getAllNodes";
 import { getById } from "./getById";
 import { getContentShape } from "./getContentShape";
 import { defGraph } from "./model";
+import { getRadius, isDisabled, isEnabled, isVisible } from "./nodeGetters";
 import { updateSize } from "./updateSize";
-import { getAllNodes } from "./getAllNodes";
 
 const update = (ctx: Context) => {
     // update nodes
@@ -22,7 +23,7 @@ const update = (ctx: Context) => {
             isEnabled(ctx.model.graph, node) ? 1.0 : isDisabled(ctx.model.graph, node) ? 0.1 : 0.5;
 
         nodeSVGs.attr("display", (node: Node) => (isVisible(ctx.model.graph, node) ? "" : "none"));
-        nodeSVGs.selectAll<d3.BaseType, Node>("circle").attr(
+        nodeSVGs.selectAll<BaseType, Node>("circle").attr(
             "fill",
             (node: Node) =>
                 ({
@@ -34,7 +35,7 @@ const update = (ctx: Context) => {
         );
 
         nodeSVGs
-            .selectAll<d3.BaseType, Node>("text")
+            .selectAll<BaseType, Node>("text")
             .attr("fill", (node: Node) => `rgba(0, 0, 0, ${getAlpha(node)})`);
     }
 
@@ -42,8 +43,8 @@ const update = (ctx: Context) => {
     const links = createLinks(ctx.model.graph);
     ctx.model.graph.links = links;
     ctx.views.links = defLinkSVGs(ctx.views.root, ctx.model.graph.links);
-    ctx.model.simulation.force("link", d3.forceLink(links));
-    ctx.views.links.attr("display", (link) =>
+    ctx.model.simulation.force("link", forceLink(links));
+    ctx.views.links.attr("display", (link: Link) =>
         isNode(link.source) ? (isEnabled(ctx.model.graph, link.source) ? "" : "none") : "",
     );
     ctx.views.links.attr("stroke-width", 2);
@@ -87,13 +88,12 @@ const main = () => {
 
     const model: Model = {
         graph: defGraph(shape),
-        simulation: d3
-            .forceSimulation<Node, Link>()
+        simulation: forceSimulation<Node, Link>()
             .force(
                 "collide",
-                d3.forceCollide<Node>().radius((d: Node) => getRadius(d)),
+                forceCollide<Node>().radius((d: Node) => getRadius(d)),
             )
-            .force("charge", d3.forceManyBody().strength(-10))
+            .force("charge", forceManyBody().strength(-10))
             .on("tick", () => {
                 const transform = (selection: NodeSVGs) =>
                     selection.attr("transform", (d: Node) => `translate(${d.x}, ${d.y})`);
@@ -109,14 +109,14 @@ const main = () => {
             }),
     };
 
-    const rootSVG: RootSVG = d3.select("#content").append("svg");
+    const rootSVG: RootSVG = select("#content").append("svg");
 
     const reset = () => {
         ctx.views.links.remove();
         update(ctx);
     };
 
-    const views = {
+    const views: Context["views"] = {
         root: rootSVG,
         types: defNodeSVGs(rootSVG, model, model.graph.types, reset),
         properties: defNodeSVGs(rootSVG, model, model.graph.properties, reset),

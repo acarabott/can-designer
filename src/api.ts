@@ -1,3 +1,7 @@
+import { Simulation, SimulationLinkDatum, SimulationNodeDatum } from "d3-force";
+import { Selection } from "d3-selection";
+import { defLinkSVGs } from "./defLinkSVGs";
+import { defNodeSVGs } from "./defNodeSVGs";
 import { DatumID, DatumType } from "./model";
 
 export interface Shape {
@@ -5,7 +9,7 @@ export interface Shape {
     height: number;
 }
 
-export interface Node extends d3.SimulationNodeDatum {
+export interface Node extends SimulationNodeDatum {
     id: DatumID;
     type: DatumType;
     enabledBy: Array<Array<DatumID>>;
@@ -14,15 +18,14 @@ export interface Node extends d3.SimulationNodeDatum {
     userEnabled: boolean;
 }
 
-export type Link = d3.SimulationLinkDatum<Node>;
+export type Link = SimulationLinkDatum<Node>;
 
 export const isNode = (node: unknown): node is Node => typeof node === "object";
 
-export type NodeSVGs = d3.Selection<SVGGElement, Node, SVGGElement, unknown>;
-export type LinkSVGs = d3.Selection<SVGLineElement, Link, SVGGElement, unknown>;
+export type NodeSVGs = ReturnType<typeof defNodeSVGs>;
+export type LinkSVGs = ReturnType<typeof defLinkSVGs>;
 
-export type RootSVG = d3.Selection<SVGSVGElement, unknown, HTMLElement, any>;
-export type Simulation = d3.Simulation<Node, Link>;
+export type RootSVG = Selection<SVGSVGElement, unknown, HTMLElement, any>;
 
 export interface Graph {
     types: Node[];
@@ -31,7 +34,7 @@ export interface Graph {
 }
 
 export interface Model {
-    simulation: Simulation;
+    simulation: Simulation<Node, Link>;
     graph: Graph;
 }
 
