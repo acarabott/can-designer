@@ -1,13 +1,13 @@
-import { Graph, Node } from "./api";
+import { Datum, Graph } from "./api";
 
-export const defCheckDependers = (graph: Readonly<Graph>) => (ids: Array<Node["id"]>) => {
+export const defCheckDependers = (graph: Readonly<Graph>) => (ids: Array<Datum["id"]>) => {
     return [...graph.types, ...graph.properties]
         .filter((node) => ids.includes(node.id))
         .every((node) => isEnabled(graph, node));
 };
 
-export const isVisible = (graph: Readonly<Graph>, datum: Readonly<Node>) => {
-    if (["1", "2"].includes(datum.type)) {
+export const isVisible = (graph: Readonly<Graph>, datum: Readonly<Datum>) => {
+    if (datum.type === "1" || datum.type === "2") {
         return true;
     }
 
@@ -16,7 +16,7 @@ export const isVisible = (graph: Readonly<Graph>, datum: Readonly<Node>) => {
         .some((node) => isEnabled(graph, node));
 };
 
-export const isEnabled = (graph: Readonly<Graph>, datum: Readonly<Node>) => {
+export const isEnabled = (graph: Readonly<Graph>, datum: Readonly<Datum>) => {
     if (datum.userEnabled) {
         return true;
     }
@@ -38,11 +38,11 @@ export const isEnabled = (graph: Readonly<Graph>, datum: Readonly<Node>) => {
     return false;
 };
 
-export const isDisabled = (graph: Readonly<Graph>, datum: Readonly<Node>) => {
+export const isDisabled = (graph: Readonly<Graph>, datum: Readonly<Datum>) => {
     return datum.disabledBy.some(defCheckDependers(graph));
 };
 
-export const getRadius = (datum: Readonly<Node>) =>
+export const getRadius = (datum: Readonly<Datum>) =>
     ({
         1: 50,
         2: 40,

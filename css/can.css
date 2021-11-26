@@ -17,15 +17,6 @@ body {
     overflow-y: auto;
 }
 
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-    font-weight: 200;
-}
-
 :root {
     --my-blue: rgb(43, 156, 212);
     --my-red: rgb(212, 100, 100);
@@ -36,6 +27,10 @@ h6 {
 h1 {
     text-align: center;
     margin-bottom: 20px;
+}
+
+h2 {
+    margin-top: 20px;
 }
 
 .links line {
