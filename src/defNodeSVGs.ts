@@ -1,10 +1,9 @@
-import * as d3drag from "d3-drag";
+import * as d3 from "d3-selection";
 import { D3DragEvent, drag } from "d3-drag";
 import { Model, Node, RootSVG } from "./api";
 import { getRadius, isDisabled } from "./nodeGetters";
 
-
-const getEvent = () => <D3DragEvent<SVGGElement, Node, SVGGElement>>(d3drag as any).event;
+const getEvent = () => <D3DragEvent<SVGGElement, Node, SVGGElement>>(d3 as any).event;
 
 export const defNodeSVGs = (
     rootSVG: RootSVG,
